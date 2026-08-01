@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sweet Bakers — Operations Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --slate:#1C3A33; --slate-2:#24463E; --slate-3:#2E5349;
+  --paper:#EFF1ED; --card:#FFFFFF; --ink:#1F2420; --muted:#6C7069; --muted-2:#8A8D84;
+  --line:#DFE2DA; --line-2:#EAECE4;
+  --brass:#A9791A; --brass-2:#C4901F; --brass-tint:#F3E9CF;
+  --fresh:#2E6A4E; --fresh-tint:#DEEBE2;
+  --warn:#B07714; --warn-tint:#F6E7C7;
+  --danger:#A3392A; --danger-tint:#F1D9D3;
+  --r:10px; --r-sm:7px;
+  --shadow:0 1px 2px rgba(28,58,51,.06),0 4px 16px rgba(28,58,51,.05);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:var(--paper);color:var(--ink);font-size:14.5px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.mono{font-family:'IBM Plex Mono',monospace;font-feature-settings:"tnum"}
+h1,h2,h3,h4{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;letter-spacing:-.01em;line-height:1.15}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input,select,textarea{font-family:inherit;font-size:14px}
+a{color:inherit}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#c9cdc3;border-radius:8px;border:2px solid var(--paper)}
+
+/* ---------- LOGIN ---------- */
+#login{position:fixed;inset:0;background:var(--slate);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
+#login .panel{width:400px;max-width:100%;background:var(--card);border-radius:16px;padding:38px 34px;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+#login .brand{display:flex;align-items:center;gap:11px;margin-bottom:4px}
+#login .mark{width:38px;height:38px;border-radius:9px;background:var(--slate);color:var(--brass-2);display:grid;place-items:center;font-family:'Bricolage Grotesque';font-weight:700;font-size:20px}
+#login h1{font-size:23px}
+#login .sub{color:var(--muted);font-size:13px;margin:14px 0 22px;letter-spacing:.02em}
+#login label{display:block;font-size:12px;font-weight:600;color:var(--slate);margin:14px 0 6px;letter-spacing:.02em}
+#login select,#login input,#login textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:var(--r-sm);background:#fcfcfb;color:var(--ink)}
+#login select:focus,#login input:focus,#login textarea:focus{outline:none;border-color:var(--brass)}
+#login .go{width:100%;margin-top:22px;padding:12px;background:var(--slate);color:#fff;border-radius:var(--r-sm);font-weight:600;font-size:15px;transition:background .15s}
+#login .go:hover{background:var(--slate-2)}
+#login .hint{margin-top:16px;font-size:11.5px;color:var(--muted-2);text-align:center;line-height:1.6}
+#login .switch{margin-top:16px;font-size:12.5px;color:var(--muted);text-align:center}
+#login .switch button{color:var(--brass);font-weight:600}
+#login .switch button:hover{text-decoration:underline}
+.login-row{display:flex;gap:12px}.login-row>*{flex:1}
+
+/* ---------- SHELL ---------- */
+#app{display:none;height:100vh;grid-template-columns:236px 1fr}
+#app.on{display:grid}
+.side{background:var(--slate);color:#cfdad3;display:flex;flex-direction:column;padding:18px 0}
+.side .brand{display:flex;align-items:center;gap:10px;padding:0 20px 18px}
+.side .mark{width:34px;height:34px;border-radius:8px;background:var(--slate-3);color:var(--brass-2);display:grid;place-items:center;font-family:'Bricolage Grotesque';font-weight:700;font-size:18px}
+.side .brand b{font-family:'Bricolage Grotesque';color:#fff;font-size:16.5px;font-weight:600;letter-spacing:-.01em}
+.side .brand span{display:block;font-size:10.5px;color:#7f9088;letter-spacing:.08em;text-transform:uppercase;margin-top:1px}
+.side nav{flex:1;overflow-y:auto;padding:6px 12px}
+.side .grp{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:#6e7f77;padding:16px 10px 7px}
+.side a{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:8px;font-size:14px;color:#c2cfc8;text-decoration:none;margin-bottom:1px;transition:background .12s,color .12s;cursor:pointer}
+.side a .ic{width:18px;text-align:center;font-size:15px;opacity:.85}
+.side a:hover{background:var(--slate-2);color:#fff}
+.side a.active{background:var(--brass);color:#fff;font-weight:500}
+.side a.active .ic{opacity:1}
+.side a .badge-n{margin-left:auto;background:var(--danger);color:#fff;font-size:11px;font-weight:600;padding:1px 7px;border-radius:20px;font-family:'IBM Plex Mono'}
+.side .who{border-top:1px solid var(--slate-3);margin-top:8px;padding:14px 20px 2px;display:flex;align-items:center;gap:10px}
+.side .av{width:32px;height:32px;border-radius:50%;background:var(--brass);color:#fff;display:grid;place-items:center;font-weight:600;font-size:13px}
+.side .who b{color:#fff;font-size:13px;font-weight:500;display:block}
+.side .who span{font-size:11px;color:#7f9088;text-transform:capitalize}
+.side .out{margin-left:auto;color:#7f9088;font-size:16px}
+.side .out:hover{color:#fff}
+
+.main{overflow-y:auto;height:100vh}
+.topbar{position:sticky;top:0;z-index:20;background:rgba(239,241,237,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:15px 30px;display:flex;align-items:center;gap:16px}
+.topbar h2{font-size:20px}
+.topbar .crumb{font-size:12px;color:var(--muted);letter-spacing:.03em;text-transform:uppercase;font-weight:600}
+.topbar .sp{flex:1}
+.topbar .datechip{font-size:12px;font-weight:600;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:9px;padding:8px 12px}
+.topbar .bell{position:relative;width:38px;height:38px;border-radius:9px;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;font-size:17px;color:var(--slate)}
+.topbar .bell .dot{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 4px;background:var(--danger);color:#fff;font-size:10px;font-weight:700;border-radius:20px;display:grid;place-items:center;font-family:'IBM Plex Mono'}
+.wrap{padding:26px 30px 70px}
+
+/* ---------- COMPONENTS ---------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.grid{display:grid;gap:18px}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g-auto{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.two-col{grid-template-columns:1fr 1fr}
+.three-col{grid-template-columns:repeat(3,1fr)}
+@media(max-width:1080px){.g4,.kpis{grid-template-columns:repeat(2,1fr)}.g3,.g2,.two-col,.three-col{grid-template-columns:1fr}}
+.grow{flex:1}
+
+.kpi{padding:18px 20px;position:relative}
+.kpi .lbl{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:7px}
+.kpi .lbl .ic{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;font-size:14px}
+.kpi .val{font-family:'IBM Plex Mono';font-weight:600;font-size:29px;margin:12px 0 3px;letter-spacing:-.02em}
+.kpi .foot{font-size:12px;color:var(--muted)}
+.kpi .foot b{font-weight:600}
+.up{color:var(--fresh)} .down{color:var(--danger)}
+
+.panel{padding:20px 22px}
+.panel-h{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.panel-h h3{font-size:16px}
+.panel-h .tag{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.panel-h .sp{flex:1}
+.card-h{display:flex;align-items:center;gap:10px;padding:18px 22px 0}
+.card-h h3{font-size:16px}
+.card-h .tag{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.card-b{padding:16px 22px 20px}
+
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;padding:0 14px 10px;border-bottom:1px solid var(--line)}
+td{padding:12px 14px;border-bottom:1px solid var(--line-2);font-size:14px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#faf9f5}
+tr.clickable{cursor:pointer}
+.num{font-family:'IBM Plex Mono';font-feature-settings:"tnum"}
+td.num,th.r{text-align:right}
+td.r{text-align:right}
+.tbl-wrap{overflow-x:auto}
+
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:20px;font-family:'IBM Plex Sans'}
+.pill .d{width:6px;height:6px;border-radius:50%}
+.p-fresh{background:var(--fresh-tint);color:var(--fresh)} .p-fresh .d{background:var(--fresh)}
+.p-warn{background:var(--warn-tint);color:var(--warn)} .p-warn .d{background:var(--warn)}
+.p-danger{background:var(--danger-tint);color:var(--danger)} .p-danger .d{background:var(--danger)}
+.p-slate{background:#e4e8e2;color:var(--slate)} .p-slate .d{background:var(--slate)}
+.p-brass{background:var(--brass-tint);color:var(--brass)} .p-brass .d{background:var(--brass)}
+/* badge aliases (feature parity) */
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:20px}
+.b-good{background:var(--fresh-tint);color:var(--fresh)}
+.b-warn{background:var(--warn-tint);color:var(--warn)}
+.b-bad{background:var(--danger-tint);color:var(--danger)}
+.b-info{background:#e4e8e2;color:var(--slate)}
+.b-mut{background:var(--line-2);color:var(--muted)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 15px;border-radius:var(--r-sm);font-weight:600;font-size:13.5px;transition:.13s;border:1.5px solid transparent;white-space:nowrap}
+.btn .ic{font-size:14px}
+.btn-primary{background:var(--brass);color:#fff}
+.btn-primary:hover{background:var(--brass-2)}
+.btn-slate{background:var(--slate);color:#fff}
+.btn-slate:hover{background:var(--slate-2)}
+.btn-ghost{background:var(--card);border-color:var(--line);color:var(--slate)}
+.btn-ghost:hover{border-color:var(--brass);color:var(--brass)}
+.btn-good{background:var(--fresh);color:#fff}
+.btn-good:hover{background:#255a41}
+.btn-info{background:var(--slate);color:#fff}
+.btn-info:hover{background:var(--slate-2)}
+.btn-sm{padding:6px 11px;font-size:12.5px}
+.btn-block{width:100%}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-danger{background:var(--danger-tint);color:var(--danger)}
+.btn-danger:hover{background:#ecc9c0}
+.linkbtn{background:none;color:var(--brass);font-weight:600}
+.linkbtn:hover{text-decoration:underline}
+
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--slate);margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:var(--r-sm);background:#fcfcfb;color:var(--ink)}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--brass)}
+.field input:disabled{opacity:.55}
+.row{display:flex;gap:12px}.row>*{flex:1}
+@media(max-width:560px){.row{flex-direction:column}}
+
+.empty{text-align:center;padding:44px 20px;color:var(--muted)}
+.empty .ic{font-size:34px;opacity:.35;margin-bottom:10px}
+
+/* readout (feasibility signature) */
+.readout{background:var(--slate);border-radius:var(--r);padding:22px 24px;color:#cfdad3;position:relative;overflow:hidden}
+.readout::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--brass),var(--brass-2))}
+.readout .cap{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#83999a}
+.readout .big{font-family:'IBM Plex Mono';font-weight:600;font-size:40px;color:#fff;line-height:1;margin:10px 0 4px;letter-spacing:-.02em}
+.readout .big.warnc{color:var(--brass-2)}
+.readout .big.dangerc{color:#e88a6a}
+.readout .note{font-size:13px;color:#a9b6ae}
+
+.bnk{display:flex;flex-direction:column;gap:9px;margin-top:14px}
+.bar{display:flex;align-items:center;gap:11px;font-size:13px}
+.bar .n{width:118px;flex:none;font-weight:500}
+.bar .track{flex:1;height:8px;background:var(--line-2);border-radius:6px;overflow:hidden}
+.bar .fill{height:100%;border-radius:6px}
+.bar .v{width:118px;flex:none;text-align:right;font-family:'IBM Plex Mono';font-size:12.5px;color:var(--muted)}
+/* inline level bar */
+.lvl{height:8px;background:var(--line-2);border-radius:6px;overflow:hidden;min-width:80px}
+.lvl i{display:block;height:100%;border-radius:6px}
+
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;flex-direction:column;gap:10px;align-items:flex-end}
+.toast{background:var(--slate);color:#fff;padding:13px 18px;border-radius:var(--r);box-shadow:0 12px 40px rgba(0,0,0,.3);font-size:14px;display:flex;align-items:center;gap:10px;animation:tin .3s ease;max-width:340px}
+.toast::before{content:"✓";color:var(--brass-2);font-size:16px}
+.toast.good::before{content:"✓";color:#7fe0b0}
+.toast.warn::before{content:"!";color:var(--brass-2)}
+.toast.bad::before{content:"✕";color:#e88a6a}
+@keyframes tin{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+.modal-bg{position:fixed;inset:0;background:rgba(20,32,28,.55);backdrop-filter:blur(2px);z-index:150;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.on{display:flex}
+.modal{background:var(--card);border-radius:14px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 30px 80px rgba(0,0,0,.4)}
+.modal.wide{max-width:640px}
+.modal-h,.card-h.modh{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.modal-h h3{font-size:18px}.modal-h .x,.card-h .x{margin-left:auto;font-size:20px;color:var(--muted);line-height:1}
+.modal-b{padding:22px 24px}
+.modal-f{padding:16px 24px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+
+.kv{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line-2);font-size:13.5px}
+.kv:last-child{border-bottom:none}
+.kv span{color:var(--muted)}
+.kv b{font-weight:600;text-align:right}
+.sec-lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:700;margin:16px 0 6px}
+
+.deny{background:var(--danger-tint);color:var(--danger);border-radius:var(--r);padding:14px 16px;font-size:13.5px;display:flex;gap:10px;align-items:center}
+
+.alert{display:flex;gap:12px;align-items:flex-start;padding:13px 16px;border-radius:var(--r);font-size:13.5px;border:1px solid var(--line);margin-bottom:12px}
+.alert>span:first-child{font-size:18px;line-height:1.2}
+.alert div b{display:block;font-weight:600;margin-bottom:1px}
+.alert .act{margin-left:auto;align-self:center;flex:none}
+.a-bad{background:var(--danger-tint);color:var(--danger);border-color:#e6c6bc}
+.a-warn{background:var(--warn-tint);color:var(--warn);border-color:#ecd7a8}
+.a-info{background:var(--brass-tint);color:var(--brass);border-color:#e6d3a0}
+.a-good{background:var(--fresh-tint);color:var(--fresh);border-color:#c6dfcf}
+
+.tabs{display:flex;gap:4px;background:var(--line-2);padding:4px;border-radius:9px;margin-bottom:18px;width:fit-content}
+.tabs button{padding:7px 15px;border-radius:6px;font-size:13.5px;font-weight:600;color:var(--muted)}
+.tabs button.on{background:var(--card);color:var(--slate);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.seg{display:flex;gap:4px;background:var(--line-2);padding:4px;border-radius:9px;flex-wrap:wrap}
+.seg button{padding:7px 13px;border-radius:6px;font-size:13px;font-weight:600;color:var(--muted)}
+.seg button.active{background:var(--card);color:var(--slate);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.search{display:flex;align-items:center;gap:8px;background:var(--card);border:1.5px solid var(--line);border-radius:var(--r-sm);padding:8px 12px;max-width:280px;flex:1}
+.search input{border:none;background:none;flex:1;outline:none;width:100%}
+.search .ic{color:var(--muted)}
+
+.prodcard{padding:16px;display:flex;flex-direction:column;gap:3px}
+.prodcard .thumb{height:96px;border-radius:8px;background:var(--brass-tint);display:grid;place-items:center;font-size:40px;margin-bottom:10px}
+.prodcard .nm{font-weight:600;font-size:15px}
+.prodcard .desc{font-size:12px;color:var(--muted);min-height:32px;margin:2px 0 6px}
+.prodcard .pr{font-family:'IBM Plex Mono';font-weight:600;color:var(--brass);font-size:17px}
+.prodcard .prow{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.qtybox,.qty-ctl{display:inline-flex;align-items:center;border:1.5px solid var(--line);border-radius:var(--r-sm);overflow:hidden;width:fit-content}
+.qtybox button,.qty-ctl button{width:30px;height:30px;background:var(--paper);color:var(--slate);font-size:16px}
+.qtybox input{width:44px;text-align:center;border:none;border-left:1.5px solid var(--line);border-right:1.5px solid var(--line);font-family:'IBM Plex Mono'}
+.qty-ctl span{width:42px;text-align:center;font-family:'IBM Plex Mono';line-height:30px;border-left:1.5px solid var(--line);border-right:1.5px solid var(--line)}
+.mini,.subtx{font-size:12px;color:var(--muted)}
+.maxchip{font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;background:var(--brass-tint);color:var(--brass);font-family:'IBM Plex Mono'}
+
+/* top sellers / horizontal bars */
+.hrow{display:flex;align-items:center;gap:11px;margin-bottom:9px;font-size:13px}
+.hrow .nm{width:150px;flex:none;font-weight:500}
+.hrow .hbar{flex:1;height:9px;background:var(--line-2);border-radius:6px;overflow:hidden}
+.hrow .hbar i{display:block;height:100%;border-radius:6px;background:var(--brass)}
+.hrow .v{width:60px;text-align:right;font-family:'IBM Plex Mono';font-size:12px;color:var(--muted)}
+
+/* timeline */
+.timeline{list-style:none;padding-left:6px}
+.timeline li{position:relative;padding:0 0 12px 18px;font-size:13px;color:var(--ink)}
+.timeline li::before{content:"";position:absolute;left:0;top:6px;width:8px;height:8px;border-radius:50%;background:var(--brass)}
+.timeline li::after{content:"";position:absolute;left:3.5px;top:14px;bottom:0;width:1px;background:var(--line)}
+.timeline li:last-child::after{display:none}
+.timeline li b{font-family:'IBM Plex Mono';font-size:12px;color:var(--muted)}
+.timeline li.dim{color:var(--muted)}
+
+/* order stepper */
+.ostep{display:flex;align-items:flex-start;gap:2px;flex-wrap:wrap}
+.ostep .s{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11px;color:var(--muted);flex:none;text-align:center;width:78px}
+.ostep .s .d{width:26px;height:26px;border-radius:50%;background:var(--line-2);color:var(--muted);display:grid;place-items:center;font-weight:600;font-size:12px;font-family:'IBM Plex Mono'}
+.ostep .s.on .d{background:var(--fresh);color:#fff}
+.ostep .s.on{color:var(--slate);font-weight:600}
+.ostep .ln{flex:1;height:2px;background:var(--line-2);margin-top:13px;min-width:10px}
+
+/* feasibility rows */
+.feas-row{padding:11px 0;border-bottom:1px solid var(--line-2)}
+.feas-row:last-child{border-bottom:none}
+.feas-row .nm{font-weight:600;font-size:13.5px;margin-bottom:6px}
+.feas-row .need{font-size:12px;color:var(--muted);margin-top:5px}
+.bigresult{display:flex;gap:14px;align-items:center;padding:16px;border-radius:var(--r);border:1px solid var(--line)}
+.bigresult .n{font-weight:700;font-size:15px}
+.bigresult.ok{background:var(--fresh-tint);border-color:#c6dfcf}
+.bigresult.no{background:var(--danger-tint);border-color:#e6c6bc}
+.recipe-line{display:grid;grid-template-columns:1fr 96px 38px;gap:8px;margin-bottom:8px;align-items:center}
+.recipe-line select,.recipe-line input{padding:9px 10px;border:1.5px solid var(--line);border-radius:var(--r-sm);background:#fcfcfb;width:100%}
+.steps{font-size:13px;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 16px}
+.steps b{background:var(--slate);color:#fff;border-radius:6px;padding:1px 7px;font-family:'IBM Plex Mono';font-size:12px;margin:0 3px}
+
+/* dashboard donut legend */
+.donut-wrap{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.legend{display:flex;flex-direction:column;gap:7px;font-size:12.5px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:8px}
+
+/* notification drawer */
+.notif-drawer{position:fixed;top:0;right:0;height:100vh;width:370px;max-width:92vw;background:var(--card);border-left:1px solid var(--line);box-shadow:-24px 0 70px rgba(28,58,51,.22);transform:translateX(110%);transition:transform .28s ease;z-index:160;display:flex;flex-direction:column}
+.notif-drawer.open{transform:none}
+.notif-h{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.notif-h h3{font-size:16px}
+.notif-list{flex:1;overflow-y:auto;padding:14px}
+.notif{display:flex;gap:11px;padding:12px;border-radius:var(--r-sm);border:1px solid var(--line-2);margin-bottom:9px;align-items:flex-start}
+.notif.unread{background:var(--brass-tint);border-color:#e6d3a0}
+.notif .ic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:16px;flex:none;background:var(--line-2)}
+.notif b{font-size:13.5px;display:block}
+.notif p{font-size:12.5px;color:var(--muted);margin-top:1px}
+.notif .tm{font-size:11px;color:var(--muted-2);margin-top:4px;text-transform:capitalize}
+
+/* cart fab */
+.cart-fab{position:fixed;bottom:24px;right:24px;background:var(--brass);color:#fff;padding:13px 20px;border-radius:30px;font-weight:600;font-size:14px;box-shadow:0 14px 34px rgba(169,121,26,.42);display:none;align-items:center;gap:9px;z-index:120}
+.cart-fab:hover{background:var(--brass-2)}
+.cart-fab.show{display:inline-flex}
+.cart-fab .cbadge{background:#fff;color:var(--brass);font-size:12px;font-weight:700;min-width:20px;height:20px;border-radius:20px;display:grid;place-items:center;padding:0 5px;font-family:'IBM Plex Mono'}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="panel" id="loginBox">
+    <div class="brand"><div class="mark">S</div><h1>Sweet Bakers</h1></div>
+    <div class="sub">Bakery operations console — sign in</div>
+    <label>Sign in as</label>
+    <select id="loginRole"></select>
+    <label>Password</label>
+    <input id="loginPass" type="password" value="••••••••">
+    <button class="go" onclick="doLogin()">Sign in</button>
+    <div class="switch">New customer? <button onclick="showRegister()">Create an account</button></div>
+    <div class="hint">Prototype — pick any role to explore its permissions.<br>Data lives in memory and resets on reload.</div>
+  </div>
+
+  <div class="panel" id="registerBox" style="display:none">
+    <div class="brand"><div class="mark">S</div><h1>Create account</h1></div>
+    <div class="sub">Customer sign-up — your address is saved for checkout</div>
+    <div class="login-row">
+      <div><label>Full name</label><input id="rName" placeholder="e.g. Tharindu P."></div>
+      <div><label>Phone</label><input id="rPhone" placeholder="07X-XXXXXXX"></div>
+    </div>
+    <label>Email</label><input id="rEmail" type="email" placeholder="you@example.com">
+    <label>Delivery address</label><textarea id="rAddr" rows="2" placeholder="No, Street, City"></textarea>
+    <label>Password</label><input id="rPass" type="password" placeholder="Create a password">
+    <button class="go" onclick="doRegister()">Create account &amp; sign in</button>
+    <div class="switch">Already registered? <button onclick="showLogin()">Back to sign in</button></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <aside class="side">
+    <div class="brand"><div class="mark">S</div><div><b>Sweet Bakers</b><span>Ops Console</span></div></div>
+    <nav id="nav"></nav>
+    <div class="who">
+      <div class="av" id="avatar">P</div>
+      <div><b id="whoName">—</b><span id="whoRole">—</span></div>
+      <button class="out" onclick="logout()" title="Sign out">⏻</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div><div class="crumb" id="crumb">Console</div><h2 id="title">Dashboard</h2></div>
+      <div class="sp"></div>
+      <div class="datechip mono" id="dateChip">—</div>
+      <button class="bell" onclick="toggleNotif()">🔔<span class="dot" id="belldot" style="display:none">0</span></button>
+    </div>
+    <div class="wrap" id="view"></div>
+  </div>
+</div>
+
+<!-- notification drawer -->
+<div class="notif-drawer" id="notifDrawer">
+  <div class="notif-h"><h3>🔔 Notifications</h3><span class="grow"></span>
+    <button class="btn btn-ghost btn-sm" onclick="markAllRead()">Mark all read</button>
+    <button class="btn btn-ghost btn-sm" onclick="toggleNotif(false)">✕</button></div>
+  <div class="notif-list" id="notifList"></div>
+</div>
+
+<button class="cart-fab" id="cartFab" onclick="openCheckout()">🧺 Checkout <span class="cbadge" id="cartCount">0</span></button>
+<div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+/* ============================================================
+   DATA (in-memory "database")
+   ============================================================ */
+const today = new Date('2026-07-28');
+const d = n => { const x=new Date(today); x.setDate(x.getDate()+n); return x.toISOString().slice(0,10); };
+const todayStr = today.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+const nowT = () => new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+const money = n => 'Rs. '+Number(n).toLocaleString('en-LK',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt = n => 'Rs. '+Number(n).toLocaleString('en-US',{maximumFractionDigits:0});
+const uid = (p,n)=>p+String(n).padStart(3,'0');
+
+let DB, SESSION=null, CURRENT='', cart={}, plan={}, editRecipe=[];
+let invFilter='all', poFilter='all', ordFilter='all', searchTxt='';
+
+function seed(){ DB = {
+  users:[
+    {id:1,name:'Pasindu R.',email:'admin@sweetbakers.lk',role:'admin',active:true,phone:'071-1000100'},
+    {id:2,name:'Nadeesha K.',email:'manager@sweetbakers.lk',role:'manager',active:true,phone:'071-1000200'},
+    {id:3,name:'Sunil B.',email:'baker@sweetbakers.lk',role:'baker',active:true,phone:'071-1000300'},
+    {id:4,name:'Kasun P.',email:'store@sweetbakers.lk',role:'store',active:true,phone:'071-1000400'},
+    {id:5,name:'Amaya S.',email:'amaya@gmail.com',role:'customer',active:true,phone:'077-5551234',address:'12, Galle Road, Colombo 03',payment:'Cash on delivery'}
+  ],
+  suppliers:[
+    {id:'S01',name:'Ceylon Flour Mills',contact:'011-2456789',email:'orders@ceylonflour.lk',lead:3,items:'Flour, Yeast'},
+    {id:'S02',name:'Kandy Dairy Co.',contact:'011-2987654',email:'sales@kandydairy.lk',lead:2,items:'Butter, Milk, Eggs'},
+    {id:'S03',name:'Lanka Sugar Ltd.',contact:'077-1234567',email:'hello@lankasugar.lk',lead:4,items:'Sugar, Chocolate, Vanilla'}
+  ],
+  ingredients:[
+    {id:'IG01',name:'Wheat flour',uom:'kg',cost:180,reorder:40,supplier:'S01',used7:86},
+    {id:'IG02',name:'Sugar',uom:'kg',cost:240,reorder:25,supplier:'S03',used7:22},
+    {id:'IG03',name:'Butter',uom:'kg',cost:1450,reorder:12,supplier:'S02',used7:14},
+    {id:'IG04',name:'Eggs',uom:'pc',cost:32,reorder:120,supplier:'S02',used7:310},
+    {id:'IG05',name:'Yeast',uom:'kg',cost:1200,reorder:4,supplier:'S01',used7:2.4},
+    {id:'IG06',name:'Milk',uom:'L',cost:290,reorder:20,supplier:'S02',used7:24},
+    {id:'IG07',name:'Dark chocolate',uom:'kg',cost:2100,reorder:5,supplier:'S03',used7:6},
+    {id:'IG08',name:'Vanilla essence',uom:'L',cost:3800,reorder:1,supplier:'S03',used7:0.9}
+  ],
+  batches:[
+    {id:'B1001',ing:'IG01',sup:'S01',recv:80,qty:52,exp:d(9),cost:180},
+    {id:'B1002',ing:'IG01',sup:'S01',recv:60,qty:18,exp:d(2),cost:176},
+    {id:'B1003',ing:'IG02',sup:'S03',recv:40,qty:31,exp:d(60),cost:240},
+    {id:'B1004',ing:'IG03',sup:'S02',recv:20,qty:6,exp:d(4),cost:1450},
+    {id:'B1005',ing:'IG04',sup:'S02',recv:300,qty:140,exp:d(12),cost:32},
+    {id:'B1006',ing:'IG05',sup:'S01',recv:8,qty:2.4,exp:d(40),cost:1200},
+    {id:'B1007',ing:'IG06',sup:'S02',recv:30,qty:9,exp:d(1),cost:290},
+    {id:'B1008',ing:'IG06',sup:'S02',recv:24,qty:9,exp:d(6),cost:288},
+    {id:'B1009',ing:'IG07',sup:'S03',recv:12,qty:9,exp:d(50),cost:2100},
+    {id:'B1010',ing:'IG08',sup:'S03',recv:2,qty:0.8,exp:d(120),cost:3800}
+  ],
+  products:[
+    {id:'P01',name:'Egg bun',emoji:'🥯',price:120,stock:48,desc:'Sri Lankan classic, savoury egg filling.',recipe:[['IG01',.06],['IG04',1],['IG02',.01],['IG05',.002]],avg:55},
+    {id:'P02',name:'Sandwich bread',emoji:'🍞',price:180,stock:24,desc:'Soft white loaf, baked every morning.',recipe:[['IG01',.5],['IG05',.008],['IG06',.15],['IG02',.02]],avg:30},
+    {id:'P03',name:'Butter cookie',emoji:'🍪',price:60,stock:60,desc:'Crisp, buttery and lightly sweet.',recipe:[['IG01',.02],['IG03',.015],['IG02',.012],['IG04',.1]],avg:80},
+    {id:'P04',name:'Cream bun',emoji:'🧁',price:140,stock:30,desc:'Soft bun with vanilla cream filling.',recipe:[['IG01',.07],['IG03',.02],['IG06',.03],['IG02',.015]],avg:40},
+    {id:'P05',name:'Chocolate cake (1kg)',emoji:'🎂',price:2400,stock:5,desc:'Rich dark chocolate celebration cake.',recipe:[['IG01',.4],['IG07',.3],['IG02',.35],['IG04',4],['IG03',.25],['IG08',.01]],avg:4},
+    {id:'P06',name:'Croissant',emoji:'🥐',price:190,stock:36,desc:'Flaky, laminated butter pastry.',recipe:[['IG01',.08],['IG03',.06],['IG04',.5],['IG05',.002]],avg:45}
+  ],
+  orders:[
+    {id:'ORD-5012',customer:'Amaya S.',phone:'077-5551234',items:[['P05',1],['P04',6]],total:3240,status:'Preparing',date:'Today 09:12',type:'Online',mode:'Delivery',address:'12, Galle Road, Colombo 03',payment:'Cash on delivery',note:'Birthday — please add candles',delivery:null,timeline:[{t:'Today 09:12',e:'Order placed online'},{t:'Today 09:20',e:'Confirmed — preparing'}]},
+    {id:'ORD-5011',customer:'Hilton Colombo',phone:'011-2492492',items:[['P06',40]],total:7600,status:'Pending',date:'Today 08:05',type:'Online',mode:'Delivery',address:'2, Sir C. Gardiner Mw, Colombo 02',payment:'Invoice (corporate)',note:'',delivery:null,timeline:[{t:'Today 08:05',e:'Order placed online'}]},
+    {id:'ORD-5008',customer:'Walk-in',phone:'—',items:[['P02',2],['P01',6]],total:1080,status:'Delivered',date:'Today 07:40',type:'POS',mode:'Pickup',address:'In-store',payment:'Cash',note:'',delivery:null,timeline:[{t:'Today 07:40',e:'POS sale completed'}]}
+  ],
+  pos:[
+    {id:'PO118',supplier:'S03',status:'Sent',auto:false,total:9600,items:[['IG02',40]],date:'Yesterday',eta:'+4 days',by:'Nadeesha K.'}
+  ],
+  wastage:[
+    {id:'W001',ing:'IG01',batch:'B0990',qty:6,reason:'Over-Production',cost:1080,date:d(-3),auto:false},
+    {id:'W002',ing:'IG06',batch:'B0985',qty:4,reason:'Expired',cost:1160,date:d(-2),auto:true},
+    {id:'W003',ing:'IG03',batch:'B0980',qty:1.5,reason:'Damaged/Spoiled',cost:2175,date:d(-1),auto:false}
+  ],
+  production:[{date:'Today 05:30',by:'Sunil B.',lines:'Egg bun ×50, Croissant ×40, Sandwich bread ×30',status:'Completed'}],
+  sales7:[{d:'Thu',v:28400},{d:'Fri',v:34100},{d:'Sat',v:46800},{d:'Sun',v:51200},{d:'Mon',v:30900},{d:'Tue',v:33600},{d:'Wed',v:21450}],
+  notifs:[
+    {id:1,type:'bad',icon:'⚑',title:'Wheat flour near reorder',msg:'70 kg on hand · reorder at 40 kg',time:'06:10',read:false,cat:'inventory'},
+    {id:2,type:'bad',icon:'⚑',title:'Butter below reorder level',msg:'6 kg on hand · reorder at 12 kg',time:'06:10',read:false,cat:'inventory'},
+    {id:3,type:'info',icon:'☰',title:'New online order ORD-5011',msg:'Hilton Colombo · Rs. 7,600',time:'08:05',read:false,cat:'orders'},
+    {id:4,type:'warn',icon:'♺',title:'Milk batch B1007 expires tomorrow',msg:'9 L remaining — use first or discount',time:'09:40',read:false,cat:'inventory'}
+  ],
+  audit:[],
+  seq:{po:119,ord:5013,batch:1011,waste:4,notif:5,gid:1000}
+};}
+seed();
+
+/* ============================================================
+   SERVICES
+   ============================================================ */
+const ing = id=>DB.ingredients.find(i=>i.id===id);
+const prod = id=>DB.products.find(p=>p.id===id);
+const sup = id=>DB.suppliers.find(s=>s.id===id);
+const activeBatches = i=>DB.batches.filter(b=>b.ing===i && b.qty>0 && b.exp>=d(0)).sort((a,b)=>a.exp<b.exp?-1:1);
+const stockOf = i=>+activeBatches(i).reduce((s,b)=>s+b.qty,0).toFixed(3);
+const lowItems = ()=>DB.ingredients.filter(i=>stockOf(i.id)<i.reorder);
+const invValue = ()=>DB.batches.filter(b=>b.qty>0&&b.exp>=d(0)).reduce((s,b)=>s+b.qty*b.cost,0);
+const daysCover = i=>{const per=i.used7/7;return per?stockOf(i.id)/per:99;};
+const maxBakeable = p=>Math.floor(Math.min(...p.recipe.map(([iId,per])=>stockOf(iId)/per)));
+const pendingPOcount = ()=>DB.pos.filter(p=>p.status==='Draft'||p.status==='Sent').length;
+function stockStatus(i){const oh=stockOf(i.id);
+  if(oh<=0)return['Out of stock','b-bad'];
+  if(oh<i.reorder)return['Low — reorder','b-bad'];
+  if(oh<i.reorder*1.4)return['Getting low','b-warn'];
+  return['Healthy','b-good'];}
+function suggestQty(i){return Math.max(1,Math.ceil(i.reorder*2-stockOf(i.id)));}
+function recipeCost(p){return p.recipe.reduce((s,[iId,per])=>s+per*ing(iId).cost,0);}
+function margin(p){const c=recipeCost(p);return p.price?((p.price-c)/p.price*100):0;}
+
+/* FEFO deduction from batches */
+function fefoDeduct(iId,qty,ref){let rem=qty;
+  for(const b of activeBatches(iId)){ if(rem<=0)break;
+    const take=Math.min(b.qty,rem); b.qty=+(b.qty-take).toFixed(3); rem=+(rem-take).toFixed(3);}
+  return rem<=0.0001;}
+
+/* AUDIT */
+function audit(act,det){DB.audit.unshift({when:d(0)+' '+nowT(),who:SESSION?SESSION.name:'System',act,det});}
+
+/* ============================================================
+   ACCESS CONTROL + NAV
+   ============================================================ */
+const ROLE_META={
+  admin:{label:'Administrator'},manager:{label:'Manager'},baker:{label:'Baker'},
+  store:{label:'Storekeeper'},customer:{label:'Customer'}
+};
+const NAV={
+  dashboard:{ic:'▤',label:'Dashboard',grp:'Overview'},
+  inventory:{ic:'▦',label:'Inventory',grp:'Operations'},
+  production:{ic:'⚖',label:'Production plan',grp:'Operations'},
+  orders:{ic:'☰',label:'Customer orders',grp:'Operations'},
+  purchase:{ic:'⛿',label:'Purchase orders',grp:'Supply chain'},
+  suppliers:{ic:'🚚',label:'Suppliers',grp:'Supply chain'},
+  products:{ic:'❏',label:'Products & recipes',grp:'Catalogue'},
+  wastage:{ic:'♺',label:'Wastage log',grp:'Administration'},
+  users:{ic:'🛡',label:'Users & roles',grp:'Administration'},
+  notifications:{ic:'🔔',label:'Notifications',grp:'Administration'},
+  audit:{ic:'⧉',label:'Audit log',grp:'Administration'},
+  shop:{ic:'🥐',label:'Order bakery',grp:'Shop'},
+  myorders:{ic:'☰',label:'My orders',grp:'Shop'},
+  account:{ic:'👤',label:'My account',grp:'Shop'}
+};
+const CAN={
+  admin:['dashboard','inventory','production','orders','purchase','suppliers','products','wastage','users','notifications','audit'],
+  manager:['dashboard','inventory','production','orders','purchase','suppliers','products','wastage','notifications'],
+  baker:['production','inventory','products','orders','notifications'],
+  store:['inventory','purchase','suppliers','wastage','notifications'],
+  customer:['shop','myorders','account','notifications']
+};
+const HOME={admin:'dashboard',manager:'dashboard',baker:'production',store:'inventory',customer:'shop'};
+const allowed = v=>CAN[SESSION.role].includes(v);
+
+/* ============================================================
+   AUTH
+   ============================================================ */
+function fillLoginRoles(){
+  const one=r=>DB.users.find(u=>u.role===r);
+  document.getElementById('loginRole').innerHTML=Object.keys(ROLE_META).map(r=>{
+    const u=one(r);return `<option value="${r}">${ROLE_META[r].label} — ${u?u.name:''}</option>`;}).join('');
+}
+function showRegister(){document.getElementById('loginBox').style.display='none';document.getElementById('registerBox').style.display='block';}
+function showLogin(){document.getElementById('registerBox').style.display='none';document.getElementById('loginBox').style.display='block';}
+function doRegister(){
+  const n=v('rName').trim(),e=v('rEmail').trim().toLowerCase(),a=v('rAddr').trim(),p=v('rPhone').trim();
+  if(!n||!e||!a||!p||!v('rPass')){toast('Please fill every field — address is needed for delivery.','bad');return;}
+  if(DB.users.some(u=>u.email===e)){toast('An account with this email already exists.','warn');return;}
+  const u={id:Date.now(),name:n,email:e,role:'customer',active:true,phone:p,address:a,payment:'Cash on delivery'};
+  DB.users.push(u);toast('Account created — your address is saved for checkout.','good');login(u);
+}
+function doLogin(){
+  const role=document.getElementById('loginRole').value;
+  const u=DB.users.find(x=>x.role===role&&x.active) || DB.users.find(x=>x.role===role);
+  if(!u){toast('No account for that role.','bad');return;}
+  if(!u.active){toast('This account is disabled. Contact the administrator.','bad');return;}
+  login(u);
+}
+function login(u){
+  SESSION=u;
+  document.getElementById('login').style.display='none';
+  document.getElementById('app').classList.add('on');
+  document.getElementById('whoName').textContent=u.name;
+  document.getElementById('whoRole').textContent=ROLE_META[u.role].label;
+  document.getElementById('avatar').textContent=u.name[0];
+  document.getElementById('dateChip').textContent='📅 '+todayStr;
+  buildNav();updateBell();go(HOME[u.role]);
+  toast(`Welcome, ${u.name.split(' ')[0]} — ${ROLE_META[u.role].label} portal.`,'good');
+}
+function logout(){
+  seed();fillLoginRoles();SESSION=null;cart={};plan={};toggleNotif(false);updateCartFab();
+  document.getElementById('app').classList.remove('on');
+  document.getElementById('login').style.display='flex';showLogin();
+}
+
+function buildNav(){
+  const views=CAN[SESSION.role]; const groups={};
+  views.forEach(v=>{const g=NAV[v].grp;(groups[g]=groups[g]||[]).push(v);});
+  let h='';
+  for(const g in groups){ h+=`<div class="grp">${g}</div>`;
+    groups[g].forEach(v=>{ const n=NAV[v];
+      h+=`<a data-v="${v}" onclick="go('${v}')"><span class="ic">${n.ic}</span>${n.label}<span class="badge-n" id="navpill-${v}" style="display:none"></span></a>`;
+    });
+  }
+  document.getElementById('nav').innerHTML=h;
+  updateNavPills();
+}
+function updateNavPills(){
+  const set=(v,n)=>{const e=document.getElementById('navpill-'+v);if(!e)return;
+    if(n){e.style.display='inline-block';e.textContent=n;}else e.style.display='none';};
+  set('inventory',lowItems().length);
+  set('purchase',pendingPOcount());
+  set('orders',DB.orders.filter(o=>o.status==='Pending').length);
+  set('notifications',DB.notifs.filter(n=>!n.read).length);
+  if(SESSION.role==='customer')
+    set('myorders',DB.orders.filter(o=>o.customer===SESSION.name&&!['Delivered','Cancelled'].includes(o.status)).length);
+}
+const TITLES={
+  dashboard:'Live business health · '+todayStr,
+  inventory:'Self-watching stock with automatic alerts & reordering',
+  production:'Enter today’s bake — ingredients are checked live',
+  orders:'Click any order for full details, dispatch & delivery tracking',
+  purchase:'Review → approve → track → receive · auto-raised on low stock',
+  suppliers:'Vendors, lead times and contacts',
+  products:'Create, edit and remove items and their ingredient recipes',
+  wastage:'Track and reduce ingredient losses',
+  users:'Who can see and do what',
+  notifications:'Everything the system flagged for your role',
+  audit:'Read-only record of every action',
+  shop:'Baked daily · delivered to your saved address',
+  myorders:'Track deliveries and reorder your favourites',
+  account:'Delivery address, payment & loyalty'
+};
+function go(v){
+  if(!allowed(v)){renderDeny();return;}
+  CURRENT=v;searchTxt='';
+  document.querySelectorAll('.side a').forEach(a=>a.classList.toggle('active',a.dataset.v===v));
+  document.getElementById('title').textContent=NAV[v].label;
+  document.getElementById('crumb').textContent=NAV[v].grp;
+  document.getElementById('view').innerHTML=RENDER[v]();
+  if(AFTER[v])AFTER[v]();
+  updateNavPills();updateCartFab();
+  document.querySelector('.main').scrollTop=0;
+}
+function refresh(){go(CURRENT);}
+function renderDeny(){document.getElementById('view').innerHTML=
+  `<div class="deny">⛔ Your role (${ROLE_META[SESSION.role].label}) does not have permission to open this section.</div>`;}
+
+/* helpers */
+const V=()=>document.getElementById('view');
+const v=id=>document.getElementById(id).value;
+function toast(m,type=''){const wrap=document.getElementById('toasts');const t=document.createElement('div');
+  t.className='toast '+type;t.textContent=m;wrap.appendChild(t);setTimeout(()=>t.remove(),3200);}
+function modal(html,wide){document.getElementById('modal').className='modal'+(wide?' wide':'');
+  document.getElementById('modal').innerHTML=html;document.getElementById('modalBg').classList.add('on');}
+function closeModal(){document.getElementById('modalBg').classList.remove('on');}
+document.getElementById('modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg')closeModal();});
+
+function expiryPill(exp){ const days=Math.round((new Date(exp)-today)/864e5);
+  if(days<0)return `<span class="pill p-danger"><span class="d"></span>expired</span>`;
+  if(days<=2)return `<span class="pill p-danger"><span class="d"></span>${days}d left</span>`;
+  if(days<=7)return `<span class="pill p-warn"><span class="d"></span>${days}d left</span>`;
+  return `<span class="pill p-fresh"><span class="d"></span>${days}d left</span>`;
+}
+
+/* ============================================================
+   NOTIFICATIONS
+   ============================================================ */
+function notify(type,icon,title,msg,cat){
+  DB.notifs.unshift({id:DB.seq.notif++,type,icon,title,msg,time:nowT(),read:false,cat});
+  updateBell();
+}
+const unreadN=()=>DB.notifs.filter(n=>!n.read).length;
+function updateBell(){const b=document.getElementById('belldot');
+  const n=unreadN();b.style.display=n?'grid':'none';b.textContent=n;
+  const bd=document.getElementById('navpill-notifications');if(bd){if(n){bd.style.display='inline-block';bd.textContent=n;}else bd.style.display='none';}
+  renderNotifList();}
+function notifCard(n){const cls={bad:'p-danger',good:'p-fresh',warn:'p-warn',info:'p-slate'}[n.type]||'p-slate';
+  return `<div class="notif ${n.read?'':'unread'}"><div class="ic">${n.icon}</div>
+    <div style="flex:1"><b>${n.title}</b><p>${n.msg}</p><div class="tm">${n.time} · ${n.cat}</div></div>
+    ${n.read?'':`<button class="btn btn-ghost btn-sm" onclick="markRead(${n.id})">✓</button>`}</div>`;}
+function renderNotifList(){const e=document.getElementById('notifList');if(!e)return;
+  e.innerHTML=DB.notifs.length?DB.notifs.map(notifCard).join(''):`<div class="empty"><div class="ic">✓</div>All quiet.</div>`;}
+function markRead(id){const n=DB.notifs.find(x=>x.id===id);if(n)n.read=true;updateBell();updateNavPills();if(CURRENT==='notifications')refresh();}
+function markAllRead(){DB.notifs.forEach(n=>n.read=true);updateBell();updateNavPills();if(CURRENT==='notifications')refresh();}
+function toggleNotif(open){const dr=document.getElementById('notifDrawer');
+  dr.classList.toggle('open',open===undefined?!dr.classList.contains('open'):open);renderNotifList();}
+function checkLowStock(){DB.ingredients.forEach(i=>{
+  const oh=stockOf(i.id);
+  if(oh<i.reorder&&!i._notified){i._notified=true;
+    notify('bad','⚑',`${i.name} below reorder level`,`${oh} ${i.uom} on hand · reorder at ${i.reorder} ${i.uom}`,'inventory');}
+  if(oh>=i.reorder)i._notified=false;});}
+
+/* ============================================================
+   RENDERERS + AFTER hooks
+   ============================================================ */
+const RENDER={}, AFTER={};
+
+function kpiCard(icon,ibg,ifg,label,val,foot,footCls){
+  return `<div class="card kpi"><div class="lbl"><span class="ic" style="background:${ibg};color:${ifg}">${icon}</span>${label}</div>
+    <div class="val">${val}</div><div class="foot ${footCls||''}">${foot}</div></div>`;
+}
+
+/* ---------------- DASHBOARD ---------------- */
+RENDER.dashboard=()=>{
+  const wasteMonth=DB.wastage.filter(w=>w.date>=d(-30)).reduce((s,w)=>s+w.cost,0), wastePrev=8400;
+  const chg=((wasteMonth-wastePrev)/wastePrev*100);
+  const low=lowItems();
+  const salesToday=DB.sales7[6].v;
+  const openOrd=DB.orders.filter(o=>!['Delivered','Cancelled'].includes(o.status)).length;
+  const expSoon=DB.batches.filter(b=>b.qty>0&&b.exp>=d(0)&&b.exp<=d(7)).sort((a,b)=>a.exp<b.exp?-1:1);
+
+  const alerts=low.map(i=>`<div class="alert a-bad"><span>⚑</span><div><b>${i.name} below reorder</b>${stockOf(i.id)} ${i.uom} left · ~${daysCover(i).toFixed(1)} days cover</div><button class="btn btn-danger btn-sm act" onclick="autoPO('${i.id}')">Raise PO</button></div>`).join('')
+    + (DB.orders.some(o=>o.status==='Pending')?`<div class="alert a-info"><span>☰</span><div><b>${DB.orders.filter(o=>o.status==='Pending').length} order(s) awaiting confirmation</b>Confirm to start preparing.</div><button class="btn btn-ghost btn-sm act" onclick="go('orders')">Queue</button></div>`:'')
+    + `<div class="alert a-warn"><span>♺</span><div><b>${fmt(wasteMonth)} wastage this month</b>Top cause: expiry — smaller dairy batches suggested.</div><button class="btn btn-ghost btn-sm act" onclick="go('wastage')">Log</button></div>`;
+
+  const top=[...DB.products].map(p=>({n:p.name,val:p.price*p.avg})).sort((a,b)=>b.val-a.val).slice(0,5);
+  const tm=top[0].val;
+  const tops=top.map(t=>`<div class="hrow"><div class="nm">${t.n}</div><div class="hbar"><i style="width:${Math.round(t.val/tm*100)}%"></i></div><div class="v">${(t.val/1000).toFixed(1)}k</div></div>`).join('');
+
+  return `
+  <div class="grid kpis" style="margin-bottom:18px">
+    ${kpiCard('♺','var(--danger-tint)','var(--danger)','Waste cost · 30d',money(wasteMonth).replace('Rs. ','Rs.'),`${chg<0?'▼':'▲'} ${Math.abs(chg).toFixed(0)}% vs prev 30d`,chg<0?'up':'down')}
+    ${kpiCard('⛁','var(--brass-tint)','var(--brass)','Inventory value',money(invValue()).replace('Rs. ','Rs.'),`<b>${DB.batches.filter(b=>b.qty>0&&b.exp>=d(0)).length}</b> active batches`)}
+    ${kpiCard('⚑','var(--warn-tint)','var(--warn)','Low-stock items',low.length,`${low.length?'POs suggested':'all healthy'}`)}
+    ${kpiCard('☰','var(--fresh-tint)','var(--fresh)','Sales today',money(salesToday).replace('Rs. ','Rs.'),`<b>${openOrd}</b> open orders`)}
+  </div>
+  <div class="grid g2" style="margin-bottom:18px">
+    <div class="card panel"><div class="panel-h"><h3>Sales — last 7 days</h3><span class="tag">Σ ${fmt(DB.sales7.reduce((s,x)=>s+x.v,0))}</span></div><canvas id="cSales" height="150"></canvas></div>
+    <div class="card"><div class="card-h"><h3>⚡ Action centre</h3><span class="grow"></span><span class="badge b-bad">${low.length+1} alerts</span></div><div class="card-b" style="max-height:240px;overflow-y:auto">${alerts}</div></div>
+  </div>
+  <div class="grid g2" style="margin-bottom:18px">
+    <div class="card panel"><div class="panel-h"><h3>Waste cost trend</h3><span class="tag">last 6 weeks · Rs.</span></div><canvas id="cWaste" height="150"></canvas></div>
+    <div class="card panel"><div class="panel-h"><h3>Waste by reason</h3><span class="tag">30 days</span></div><canvas id="cReason" height="150"></canvas></div>
+  </div>
+  <div class="grid three-col">
+    <div class="card"><div class="card-h"><h3>Top sellers (week)</h3></div><div class="card-b">${tops}</div></div>
+    <div class="card panel"><div class="panel-h"><h3>Stock health</h3></div><div class="donut-wrap"><canvas id="cHealth" width="140" height="140" style="max-width:140px"></canvas>
+      <div class="legend">
+        <div><i style="background:var(--fresh)"></i>Healthy — ${DB.ingredients.filter(i=>stockStatus(i)[1]==='b-good').length}</div>
+        <div><i style="background:var(--warn)"></i>Getting low — ${DB.ingredients.filter(i=>stockStatus(i)[1]==='b-warn').length}</div>
+        <div><i style="background:var(--danger)"></i>Below reorder — ${DB.ingredients.filter(i=>stockStatus(i)[1]==='b-bad').length}</div>
+      </div></div></div>
+    <div class="card panel">
+      <div class="panel-h"><h3>Expiring next 7 days</h3><span class="sp"></span><button class="btn btn-ghost btn-sm" onclick="go('inventory')">Inventory</button></div>
+      ${expSoon.length?`<div class="bnk">${expSoon.map(b=>`<div class="bar"><span class="n">${ing(b.ing).name}</span><div class="track"></div><span class="v">${b.qty} ${ing(b.ing).uom} · ${expiryPill(b.exp)}</span></div>`).join('')}</div>`:`<div class="empty"><div class="ic">✓</div>Nothing expiring soon.</div>`}
+    </div>
+  </div>`;
+};
+AFTER.dashboard=()=>{
+  const co={plugins:{legend:{display:false}},scales:{y:{grid:{color:'#EAECE4'},ticks:{font:{family:'IBM Plex Mono',size:11},callback:x=>(x/1000)+'k'}},x:{grid:{display:false},ticks:{font:{family:'IBM Plex Mono',size:11}}}}};
+  new Chart(document.getElementById('cSales'),{type:'bar',data:{labels:DB.sales7.map(s=>s.d),datasets:[{data:DB.sales7.map(s=>s.v),backgroundColor:'#A9791A',borderRadius:5,maxBarThickness:34}]},options:co});
+  new Chart(document.getElementById('cWaste'),{type:'line',data:{labels:['W-6','W-5','W-4','W-3','W-2','W-1'],datasets:[{data:[11200,10400,9800,9100,8400,DB.wastage.filter(w=>w.date>=d(-30)).reduce((s,w)=>s+w.cost,0)],borderColor:'#A9791A',backgroundColor:'rgba(169,121,26,.08)',fill:true,tension:.35,borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#A9791A'}]},options:co});
+  const rs={};DB.wastage.filter(w=>w.date>=d(-30)).forEach(w=>rs[w.reason]=(rs[w.reason]||0)+w.cost);
+  new Chart(document.getElementById('cReason'),{type:'doughnut',data:{labels:Object.keys(rs),datasets:[{data:Object.values(rs),backgroundColor:['#A3392A','#B07714','#2E6A4E','#1C3A33','#C4901F'],borderWidth:2,borderColor:'#fff'}]},options:{plugins:{legend:{position:'right',labels:{font:{family:'IBM Plex Sans',size:12},boxWidth:12,padding:10}}},cutout:'62%'}});
+  const h=DB.ingredients.filter(i=>stockStatus(i)[1]==='b-good').length,w=DB.ingredients.filter(i=>stockStatus(i)[1]==='b-warn').length,b=DB.ingredients.filter(i=>stockStatus(i)[1]==='b-bad').length;
+  new Chart(document.getElementById('cHealth'),{type:'doughnut',data:{labels:['Healthy','Getting low','Below reorder'],datasets:[{data:[h,w,b],backgroundColor:['#2E6A4E','#B07714','#A3392A'],borderWidth:2,borderColor:'#fff'}]},options:{plugins:{legend:{display:false}},cutout:'66%'}});
+};
+
+/* ---------------- INVENTORY ---------------- */
+RENDER.inventory=()=>{
+  const canEdit=['admin','manager','store'].includes(SESSION.role);
+  const rows=DB.ingredients
+    .filter(i=>i.name.toLowerCase().includes(searchTxt))
+    .filter(i=>invFilter==='all'||(invFilter==='low'&&stockOf(i.id)<i.reorder)||(invFilter==='ok'&&stockOf(i.id)>=i.reorder))
+    .map(i=>{const[lbl,cls]=stockStatus(i);const oh=stockOf(i.id);
+      const pct=Math.min(100,Math.round(oh/(i.reorder*2)*100));
+      const col=cls==='b-good'?'var(--fresh)':cls==='b-warn'?'var(--warn)':'var(--danger)';
+      return `<tr><td><b>${i.name}</b><br><span class="subtx">${sup(i.supplier)?sup(i.supplier).name:'—'}</span></td>
+      <td class="num">${oh} ${i.uom}</td>
+      <td><div class="lvl"><i style="width:${pct}%;background:${col}"></i></div></td>
+      <td class="num">${i.reorder} ${i.uom}</td>
+      <td class="num">${daysCover(i)>30?'30+':daysCover(i).toFixed(1)} d</td>
+      <td class="num">${money(oh*i.cost).replace('Rs. ','')}</td>
+      <td><span class="badge ${cls}">${lbl}</span></td>
+      ${canEdit?`<td class="r" style="white-space:nowrap"><button class="btn btn-ghost btn-sm" onclick="mAddStock('${i.id}')">＋ Stock</button>
+        <button class="btn btn-ghost btn-sm" onclick="mWaste('${i.id}')">Waste</button>
+        ${oh<i.reorder?`<button class="btn btn-danger btn-sm" onclick="autoPO('${i.id}')">Raise PO</button>`:''}</td>`:''}</tr>`;}).join('');
+  const invNotifs=DB.notifs.filter(n=>n.cat==='inventory').slice(0,6);
+  const batches=DB.batches.filter(b=>b.qty>0).sort((a,b)=>a.exp<b.exp?-1:1);
+  return `
+  <div class="grid" style="grid-template-columns:1fr 330px;margin-bottom:18px">
+    <div>
+      ${lowItems().length?`<div class="alert a-bad"><span>🤖</span><div><b>Auto-replenishment ready</b>${lowItems().length} ingredient(s) below reorder: ${lowItems().map(i=>i.name).join(', ')}. Draft POs can be raised to the linked suppliers in one click.</div>${canEdit?`<button class="btn btn-danger btn-sm act" onclick="autoPOAll()">Raise all</button>`:''}</div>`:''}
+      <div class="toolbar">
+        <div class="search"><span class="ic">⌕</span><input placeholder="Search ingredients…" value="${searchTxt}" oninput="searchTxt=this.value.toLowerCase();refresh()"></div>
+        <div class="seg"><button class="${invFilter==='all'?'active':''}" onclick="invFilter='all';refresh()">All</button>
+          <button class="${invFilter==='low'?'active':''}" onclick="invFilter='low';refresh()">Below reorder</button>
+          <button class="${invFilter==='ok'?'active':''}" onclick="invFilter='ok';refresh()">Healthy</button></div>
+        <div class="grow"></div>${canEdit?`<button class="btn btn-primary btn-sm" onclick="mNewIngredient()"><span class="ic">＋</span>New ingredient</button>`:''}
+      </div>
+      <div class="card tbl-wrap panel" style="padding-top:14px">
+        <table><thead><tr><th>Ingredient</th><th class="r">In stock</th><th>Level</th><th class="r">Reorder</th><th class="r">Cover</th><th class="r">Value</th><th>Status</th>${canEdit?'<th></th>':''}</tr></thead>
+        <tbody>${rows||`<tr><td colspan="8"><div class="empty"><div class="ic">▦</div>No ingredients match.</div></td></tr>`}</tbody></table>
+      </div>
+    </div>
+    <div class="card" style="align-self:start"><div class="card-h"><h3>🔔 Inventory alerts</h3><span class="grow"></span><button class="btn btn-ghost btn-sm" onclick="toggleNotif(true)">All</button></div>
+      <div class="card-b" style="max-height:520px;overflow-y:auto">${invNotifs.length?invNotifs.map(notifCard).join(''):`<div class="empty"><div class="ic">✓</div>No inventory alerts — stock is watching itself.</div>`}</div></div>
+  </div>
+  <div class="card panel">
+    <div class="panel-h"><h3>Inventory batches</h3><span class="tag">first-expire-first-out</span><span class="sp"></span>
+      <button class="btn btn-slate btn-sm" onclick="runExpiryJob()"><span class="ic">♺</span>Run expiry job</button></div>
+    <table><thead><tr><th>Batch</th><th>Ingredient</th><th>Supplier</th><th class="r">On hand</th><th class="r">Unit cost</th><th>Expiry</th>${canEdit?'<th></th>':''}</tr></thead>
+    <tbody>${batches.length?batches.map(b=>{const i=ing(b.ing);return`<tr><td class="num">${b.id}</td><td><b>${i.name}</b></td><td>${sup(b.sup)?sup(b.sup).name:'—'}</td>
+      <td class="num">${b.qty} ${i.uom}</td><td class="num">${money(b.cost).replace('Rs. ','')}</td><td>${expiryPill(b.exp)}</td>
+      ${canEdit?`<td class="r"><button class="btn btn-danger btn-sm" onclick="mWasteBatch('${b.id}')">Log waste</button></td>`:''}</tr>`;}).join(''):`<tr><td colspan="7"><div class="empty">No active batches.</div></td></tr>`}</tbody></table>
+  </div>`;
+};
+function mAddStock(id){const i=ing(id);
+  modal(`<div class="modal-h"><h3>Receive stock — ${i.name}</h3><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="modal-b">
+    <div class="row"><div class="field"><label>Quantity received (${i.uom})</label><input id="mQty" type="number" min="0" value="50"></div>
+    <div class="field"><label>Days to expiry</label><input id="mExp" type="number" min="1" value="15"></div></div>
+    <div class="field"><label>Note (batch / source)</label><input id="mNote" placeholder="e.g. delivery from ${sup(i.supplier)?sup(i.supplier).name:'supplier'}"></div>
+  </div>
+  <div class="modal-f"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-good" onclick="saveAddStock('${id}')">Add batch to stock</button></div>`);}
+function saveAddStock(id){const i=ing(id);const q=+v('mQty')||0;const days=+v('mExp')||15;
+  if(q<=0){toast('Enter a quantity above zero.','bad');return;}
+  DB.batches.push({id:uid('B',DB.seq.batch++),ing:id,sup:i.supplier,recv:q,qty:q,exp:d(days),cost:i.cost});
+  checkLowStock();audit('RECEIVE',`${q} ${i.uom} ${i.name}`);closeModal();
+  toast(`${i.name}: +${q} ${i.uom} received.`,'good');refresh();}
+function mWaste(id){const i=ing(id);
+  modal(`<div class="modal-h"><h3>Record wastage — ${i.name}</h3><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="modal-b"><div class="row"><div class="field"><label>Quantity wasted (${i.uom})</label><input id="mQty" type="number" step="0.1" min="0" value="1"></div>
+    <div class="field"><label>Reason</label><select id="mReason"><option>Expired</option><option>Damaged/Spoiled</option><option>Over-Production</option><option>Prep-Loss/Spillage</option><option>Customer-Return</option></select></div></div></div>
+  <div class="modal-f"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-danger" onclick="saveWasteIng('${id}')">Record wastage</button></div>`);}
+function saveWasteIng(id){const i=ing(id);const q=+v('mQty')||0;const reason=v('mReason');
+  if(q<=0){toast('Enter a quantity above zero.','bad');return;}
+  if(q>stockOf(id)){toast('Quantity exceeds available stock.','bad');return;}
+  fefoDeduct(id,q);
+  DB.wastage.unshift({id:uid('W',DB.seq.waste++),ing:id,batch:'FEFO',qty:q,reason,cost:Math.round(q*i.cost),date:d(0),auto:false});
+  notify('warn','♺',`Wastage: ${i.name}`,`${q} ${i.uom} · ${reason} · −${fmt(Math.round(q*i.cost))}`,'inventory');
+  checkLowStock();audit('WASTE',`${q} ${i.uom} ${i.name} · ${reason}`);closeModal();
+  toast(`Wastage recorded · ${fmt(Math.round(q*i.cost))} lost.`,'warn');refresh();}
+function mWasteBatch(bid){const b=DB.batches.find(x=>x.id===bid);const i=ing(b.ing);
+  modal(`<div class="modal-h"><h3>Log waste — ${b.id}</h3><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="modal-b"><div class="kv"><span>Ingredient</span><b>${i.name}</b></div><div class="kv"><span>On hand</span><b>${b.qty} ${i.uom}</b></div>
+    <div class="row" style="margin-top:12px"><div class="field"><label>Quantity</label><input id="mQty" type="number" step="0.1" min="0" value="${b.qty}"></div>
+    <div class="field"><label>Reason</label><select id="mReason"><option>Expired</option><option>Damaged/Spoiled</option><option>Over-Production</option><option>Prep-Loss/Spillage</option></select></div></div></div>
+  <div class="modal-f"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-danger" onclick="saveWasteBatch('${bid}')">Log waste</button></div>`);}
+function saveWasteBatch(bid){const b=DB.batches.find(x=>x.id===bid);const i=ing(b.ing);const q=+v('mQty')||0;const reason=v('mReason');
+  if(q<=0||q>b.qty){toast('Quantity exceeds batch on-hand.','bad');return;}
+  b.qty=+(b.qty-q).toFixed(3);
+  DB.wastage.unshift({id:uid('W',DB.seq.waste++),ing:b.ing,batch:bid,qty:q,reason,cost:Math.round(q*b.cost),date:d(0),auto:false});
+  notify('warn','♺',`Wastage: ${i.name}`,`${q} ${i.uom} · ${reason} · −${fmt(Math.round(q*b.cost))}`,'inventory');
+  checkLowStock();audit('WASTE',`${q} ${i.uom} ${i.name} (${bid}) · ${reason}`);closeModal();
+  toast('Waste logged and costed.','warn');refresh();}
+function runExpiryJob(){const exp=DB.batches.filter(b=>b.qty>0&&b.exp<d(0));
+  if(!exp.length){toast('No expired batches with stock — nothing to log.','good');return;}
+  exp.forEach(b=>{const i=ing(b.ing);DB.wastage.unshift({id:uid('W',DB.seq.waste++),ing:b.ing,batch:b.id,qty:b.qty,reason:'Expired',cost:Math.round(b.qty*b.cost),date:d(0),auto:true});b.qty=0;audit('EXPIRY_JOB',`${b.id} ${i.name} auto-wasted`);});
+  notify('warn','♺','Expiry job ran',`${exp.length} expired batch(es) auto-logged as waste`,'inventory');
+  toast(`${exp.length} expired batch(es) auto-logged as waste.`,'warn');refresh();}
+function mNewIngredient(){const opts=DB.suppliers.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  modal(`<div class="modal-h"><h3>New ingredient</h3><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="modal-b"><div class="field"><label>Name *</label><input id="nName" placeholder="e.g. Cinnamon powder"></div>
+    <div class="row"><div class="field"><label>Unit</label><select id="nUnit"><option>kg</option><option>L</option><option>pc</option></select></div>
+    <div class="field"><label>Cost per unit (Rs)</label><input id="nCost" type="number" value="500"></div></div>
+    <div class="row"><div class="field"><label>Opening stock</label><input id="nStock" type="number" value="0"></div>
+    <div class="field"><label>Reorder level</label><input id="nReorder" type="number" value="5"></div></div>
+    <div class="field"><label>Supplier</label><select id="nSup">${opts}</select></div></div>
+  <div class="modal-f"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-primary" onclick="saveNewIngredient()">Save ingredient</button></div>`);}
+function saveNewIngredient(){const n=v('nName').trim();if(!n){toast('Name is required.','bad');return;}
+  const id='IG'+(DB.seq.gid++);const stock=+v('nStock')||0;
+  DB.ingredients.push({id,name:n,uom:v('nUnit'),cost:+v('nCost')||0,reorder:+v('nReorder')||0,supplier:v('nSup'),used7:0});
+  if(stock>0)DB.batches.push({id:uid('B',DB.seq.batch++),ing:id,sup:v('nSup'),recv:stock,qty:stock,exp:d(20),cost:+v('nCost')||0});
+  checkLowStock();audit('ADD_INGREDIENT',n);closeModal();toast(`${n} added to inventory.`,'good');refresh();}
+
+/* ---------------- PRODUCTION PLAN ---------------- */
+RENDER.production=()=>{
+  const canConfirm=['admin','manager','baker'].includes(SESSION.role);
+  const inputs=DB.products.map(p=>`<tr><td><span style="font-size:17px">${p.emoji}</span> <b>${p.name}</b></td>
+    <td class="num">${p.stock}</td><td><span class="maxchip">max ${maxBakeable(p)}</span></td>
+    <td><div class="qty-ctl"><button onclick="bump('${p.id}',-5)">−</button><span id="plan-${p.id}">${plan[p.id]||0}</span><button onclick="bump('${p.id}',5)">＋</button></div></td></tr>`).join('');
+  const hist=DB.production.map(pr=>`<tr><td class="mini">${pr.date}</td><td>${pr.by}</td><td class="mini">${pr.lines}</td><td><span class="badge b-good">${pr.status}</span></td></tr>`).join('');
+  return `<div class="steps" style="margin-bottom:16px"><b>1</b> Enter quantities (or auto-suggest) → <b>2</b> Live ingredient check → <b>3</b> Confirm to deduct stock (FEFO) &amp; add finished goods</div>
+  <div class="grid two-col">
+    <div class="card"><div class="card-h"><h3>Today’s bake plan</h3><span class="grow"></span>
+      <button class="btn btn-info btn-sm" onclick="suggestPlan()">✨ Auto-suggest</button>
+      <button class="btn btn-ghost btn-sm" onclick="plan={};refresh()">Clear</button></div>
+      <div class="tbl-wrap card-b" style="padding-top:6px"><table><thead><tr><th>Product</th><th class="r">On shelf</th><th>Bakeable</th><th>Plan today</th></tr></thead><tbody>${inputs}</tbody></table></div></div>
+    <div class="card"><div class="card-h"><h3>🧮 Ingredient feasibility</h3></div><div class="card-b" id="feasBox"></div></div>
+  </div>
+  <div class="card panel" style="margin-top:18px"><div class="panel-h"><h3>Production history</h3></div>
+    <table><thead><tr><th>When</th><th>Baker</th><th>Items</th><th>Status</th></tr></thead><tbody>${hist||`<tr><td colspan="4"><div class="empty">No production recorded yet.</div></td></tr>`}</tbody></table></div>`;
+};
+AFTER.production=()=>renderFeas();
+function suggestPlan(){DB.products.forEach(p=>{plan[p.id]=Math.max(0,(p.avg||10)-p.stock);});
+  toast('Plan suggested from 7-day average sales minus shelf stock.','good');refresh();}
+function bump(pid,delta){plan[pid]=Math.max(0,(plan[pid]||0)+delta);document.getElementById('plan-'+pid).textContent=plan[pid];renderFeas();}
+function planNeeds(){const need={};Object.entries(plan).forEach(([pid,q])=>{if(!q)return;prod(pid).recipe.forEach(([iId,per])=>{need[iId]=(need[iId]||0)+per*q;});});return need;}
+function renderFeas(){const box=document.getElementById('feasBox');if(!box)return;
+  const need=planNeeds();const ids=Object.keys(need);
+  const canConfirm=['admin','manager','baker'].includes(SESSION.role);
+  if(!ids.length){box.innerHTML=`<div class="empty"><div class="ic">⚖</div>Add quantities (or auto-suggest) —<br>availability is checked as you type.</div>`;return;}
+  let ok=true;
+  const rows=ids.map(id=>{const i=ing(id),n=+need[id].toFixed(3),oh=stockOf(id),pct=Math.min(100,Math.round(oh/n*100)),short=n>oh;if(short)ok=false;
+    const col=short?'var(--danger)':pct<130?'var(--warn)':'var(--fresh)';
+    return `<div class="feas-row"><div class="nm">${i.name}</div>
+      <div class="lvl"><i style="width:${pct}%;background:${col}"></i></div>
+      <div class="need">need <b class="mono">${n}</b> / have <b class="mono">${oh}</b> ${i.uom} ${short?`<span class="badge b-bad">short ${+(n-oh).toFixed(2)}</span>`:''}</div></div>`;}).join('');
+  let result;
+  if(ok){result=`<div class="bigresult ok" style="margin-top:14px"><span style="font-size:26px">✓</span><div><div class="n" style="color:var(--fresh)">Plan is fully bakeable</div><div class="mini">Confirming deducts ingredients (FEFO) and adds finished goods.</div></div></div>
+    ${canConfirm?`<button class="btn btn-good btn-block" style="margin-top:12px" onclick="confirmBake()">Confirm production &amp; update inventory</button>`:`<div class="mini" style="margin-top:12px;text-align:center">Only bakers &amp; managers can confirm production.</div>`}`;}
+  else{const adj=Object.entries(plan).filter(([,q])=>q).map(([pid,q])=>{const p=prod(pid);return `<div class="hrow"><div class="nm">${p.emoji} ${p.name}</div><div class="grow mini">planned ${q}</div><span class="maxchip">max alone: ${maxBakeable(p)}</span></div>`;}).join('');
+    result=`<div class="bigresult no" style="margin-top:14px"><span style="font-size:26px">✕</span><div><div class="n" style="color:var(--danger)">Not enough ingredients</div><div class="mini">Shortages above. Each product alone could yield at most:</div></div></div>
+      <div style="margin-top:12px">${adj}</div>
+      <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn btn-danger btn-sm" onclick="poForShortages()">⚡ Raise POs for shortages</button>
+        <button class="btn btn-ghost btn-sm" onclick="fitPlan()">Auto-fit plan to stock</button></div>`;}
+  box.innerHTML=rows+result;
+}
+function fitPlan(){let g=400;while(g--){const need=planNeeds();const over=Object.keys(need).find(id=>need[id]>stockOf(id));if(!over)break;
+  let worst=null,wv=0;Object.entries(plan).forEach(([pid,q])=>{if(!q)return;const r=prod(pid).recipe.find(x=>x[0]===over);if(r&&r[1]*q>wv){wv=r[1]*q;worst=pid;}});
+  if(worst==null)break;plan[worst]=Math.max(0,plan[worst]-1);}
+  toast('Plan auto-fitted to available ingredients.','good');refresh();}
+function poForShortages(){const need=planNeeds();const bySup={};
+  Object.keys(need).forEach(id=>{const i=ing(id);const short=need[id]-stockOf(id);if(short>0)(bySup[i.supplier]=bySup[i.supplier]||[]).push([i.id,Math.ceil(short)]);});
+  createPOs(bySup,true);notify('info','⛿','Shortage POs drafted','From today’s production plan','purchasing');
+  toast('Draft POs raised for production shortages — review & send.','good');go('purchase');}
+function confirmBake(){const need=planNeeds();
+  Object.keys(need).forEach(id=>fefoDeduct(id,need[id]));
+  const lines=Object.entries(plan).filter(([,q])=>q).map(([pid,q])=>{prod(pid).stock+=q;return prod(pid).name+' ×'+q;}).join(', ');
+  DB.production.unshift({date:'Today '+nowT(),by:SESSION.name,lines,status:'Completed'});
+  checkLowStock();notify('good','⚖','Production completed',lines,'production');audit('PRODUCTION',lines);
+  plan={};toast('Production confirmed — ingredients deducted (FEFO), shelf updated.','good');refresh();}
+
+/* ---------------- PURCHASE ORDERS ---------------- */
+RENDER.purchase=()=>{
+  const canAct=['admin','manager','store'].includes(SESSION.role);
+  const low=lowItems();
+  const rows=DB.pos.filter(p=>poFilter==='all'||p.status===poFilter).map(p=>{const s=sup(p.supplier);
+    const lines=p.items.map(([iId,q])=>`${q} ${ing(iId).uom} ${ing(iId).name}`).join(', ');
+    const cls=p.status==='Draft'?'b-mut':p.status==='Sent'?'b-info':p.status==='Cancelled'?'b-bad':'b-good';
+    return `<tr><td class="num"><b>${p.id}</b><br><span class="subtx">${p.date}</span></td>
+      <td><b>${s?s.name:'—'}</b><br><span class="subtx">lead ${s?s.lead:'?'} day(s)</span></td>
+      <td class="mini" style="max-width:260px">${lines}</td><td class="num">${money(p.total).replace('Rs. ','')}</td><td class="mini">${p.eta}</td>
+      <td><span class="badge ${cls}">${p.status}</span></td>
+      ${canAct?`<td class="r" style="white-space:nowrap">
+        ${p.status==='Draft'?`<button class="btn btn-primary btn-sm" onclick="previewPO('${p.id}')">Review &amp; send</button> <button class="btn btn-ghost btn-sm" onclick="cancelPO('${p.id}')">Cancel</button>`:''}
+        ${p.status==='Sent'?`<button class="btn btn-good btn-sm" onclick="receivePO('${p.id}')">Mark received</button> <button class="btn btn-ghost btn-sm" onclick="cancelPO('${p.id}')">Cancel</button>`:''}
+        ${p.status==='Received'?'<span class="subtx">stock updated ✓</span>':''}
+        ${p.status==='Cancelled'?'<span class="subtx">cancelled</span>':''}</td>`:''}</tr>`;}).join('');
+  return `
+  ${low.length?`<div class="card panel" style="margin-bottom:18px;border-left:3px solid var(--danger)">
+    <div class="panel-h"><h3>Reorder needed</h3><span class="tag">below reorder point</span><span class="sp"></span>
+      ${canAct?`<button class="btn btn-primary btn-sm" onclick="autoPOAll()"><span class="ic">⚙</span>Generate draft POs</button>`:''}</div>
+    <table><thead><tr><th>Ingredient</th><th class="r">On hand</th><th class="r">Reorder pt</th><th>Supplier</th><th class="r">Suggested qty</th></tr></thead><tbody>
+    ${low.map(i=>`<tr><td><b>${i.name}</b></td><td class="num">${stockOf(i.id)} ${i.uom}</td><td class="num">${i.reorder}</td><td>${sup(i.supplier)?sup(i.supplier).name:'—'}</td><td class="num">${suggestQty(i)} ${i.uom}</td></tr>`).join('')}
+    </tbody></table></div>`:''}
+  <div class="alert a-info"><span>🤖</span><div><b>Automation</b>Low stock raises a draft PO sized to restore 2× the reorder level, addressed to the linked supplier. You always review before it goes out, and can cancel even after sending — until goods are received.</div></div>
+  <div class="toolbar"><div class="seg">${['all','Draft','Sent','Received','Cancelled'].map(f=>`<button class="${poFilter===f?'active':''}" onclick="poFilter='${f}';refresh()">${f==='all'?'All':f}</button>`).join('')}</div>
+    <div class="grow"></div>${canAct&&low.length?`<button class="btn btn-danger btn-sm" onclick="autoPOAll()">⚡ Raise POs · ${low.length} low item(s)</button>`:''}</div>
+  <div class="card panel" style="padding-top:14px"><table><thead><tr><th>PO</th><th>Supplier</th><th>Items</th><th class="r">Value</th><th>ETA</th><th>Status</th>${canAct?'<th></th>':''}</tr></thead>
+    <tbody>${rows||`<tr><td colspan="7"><div class="empty"><div class="ic">⛿</div>No purchase orders in this view.</div></td></tr>`}</tbody></table></div>`;
+};
+function createPOs(bySup,auto){
+  for(const s in bySup){const items=bySup[s];
+    const total=items.reduce((sum,[iId,q])=>sum+Math.round(q*ing(iId).cost),0);
+    const id='PO'+(DB.seq.po++);
+    DB.pos.unshift({id,supplier:s,status:'Draft',auto,total,items,date:'Today',eta:'+'+sup(s).lead+' days',by:SESSION.name});
+    notify('info','⛿',`Draft ${id} raised`,`${sup(s).name} · ${fmt(total)}`,'purchasing');audit('PO_DRAFT',`${id} · ${sup(s).name}`);}
+}
+function autoPO(ingId){const i=ing(ingId);const bySup={};bySup[i.supplier]=[[i.id,suggestQty(i)]];
+  createPOs(bySup,true);toast(`Draft PO created for ${i.name} — review before sending.`,'good');
+  if(['admin','manager','store'].includes(SESSION.role))go('purchase');else refresh();}
+function autoPOAll(){const low=lowItems();if(!low.length){toast('Nothing below reorder point.','good');return;}
+  const bySup={};low.forEach(i=>{(bySup[i.supplier]=bySup[i.supplier]||[]).push([i.id,suggestQty(i)]);});
+  createPOs(bySup,true);toast('Draft POs raised, grouped by supplier. Review before sending.','good');go('purchase');}
+function previewPO(id){const p=DB.pos.find(x=>x.id===id),s=sup(p.supplier);
+  const lines=p.items.map(([iId,q])=>`<tr><td>${ing(iId).name}</td><td class="num">${q} ${ing(iId).uom}</td><td class="num">${money(ing(iId).cost).replace('Rs. ','')}</td><td class="num">${money(Math.round(q*ing(iId).cost)).replace('Rs. ','')}</td></tr>`).join('');
+  modal(`<div class="modal-h"><h3>Purchase order · ${p.id}</h3><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="modal-b">
+    <div class="kv"><span>Supplier</span><b>${s.name}</b></div>
+    <div class="kv"><span>Send to</span><b>${s.email}</b></div>
+    <div class="kv"><span>Expected delivery</span><b>${s.lead} day(s) after sending</b></div>
+    <div class="card tbl-wrap" style="margin-top:14px"><table><thead><tr><th>Item</th><th class="r">Qty</th><th class="r">Unit cost</th><th class="r">Line total</th></tr></thead>
+    <tbody>${lines}<tr><td colspan="3" class="r"><b>Total</b></td><td class="num"><b style="color:var(--brass)">${money(p.total).replace('Rs. ','')}</b></td></tr></tbody></table></div>
+  </div>
+  <div class="modal-f"><button class="btn btn-ghost" onclick="closeModal()">Back</button>
+    <button class="btn btn-danger" onclick="closeModal();cancelPO('${p.id}')">Cancel PO</button>
+    <button class="btn btn-primary" onclick="sendPO('${p.id}')"><span class="ic">✓</span>Approve &amp; send</button></div>`,true);}
+function sendPO(id){const p=DB.pos.find(x=>x.id===id);p.status='Sent';
+  notify('info','⛿',`${id} sent`,`To ${sup(p.supplier).name} · ${fmt(p.total)}`,'purchasing');audit('PO_SENT',`${id} · ${sup(p.supplier).name}`);
+  closeModal();toast(`${id} sent to ${sup(p.supplier).name} (${sup(p.supplier).email}).`,'good');refresh();}
+function cancelPO(id){const p=DB.pos.find(x=>x.id===id);
+  modal(`<div class="modal-h"><h3>Cancel ${id}?</h3><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="modal-b">${p.status==='Sent'?'This PO has already been sent — the supplier will be notified of the cancellation.':'This draft will be discarded.'}</div>
+  <div class="modal-f"><button class="btn btn-ghost" onclick="closeModal()">Keep PO</button>
+    <button class="btn btn-danger" onclick="doCancelPO('${id}')">Yes, cancel PO</button></div>`);}
+function doCancelPO(id){const p=DB.pos.find(x=>x.id===id);const was=p.status;p.status='Cancelled';p.eta='—';
+  notify('warn','⛿',`${id} cancelled`,was==='Sent'?'Supplier notified':'Draft discarded','purchasing');audit('PO_CANCELLED',id);
+  closeModal();toast(`${id} cancelled.`,'warn');refresh();}
+function receivePO(id){const p=DB.pos.find(x=>x.id===id);p.status='Received';p.eta='—';
+  p.items.forEach(([iId,q])=>{const i=ing(iId);DB.batches.push({id:uid('B',DB.seq.batch++),ing:iId,sup:p.supplier,recv:q,qty:q,exp:d(i.uom==='pc'?14:20),cost:i.cost});});
+  checkLowStock();notify('good','✓',`${id} received`,'Inventory updated automatically','inventory');audit('PO_RECEIVED',`${id} · ${p.items.length} batch(es)`);
+  toast(`${id} received — inventory updated automatically.`,'good');refresh();}
+
+/* ---------------- SUPPLIERS ---------------- */
+RENDER.suppliers=()=>{
+  const canEdit=['admin','manager','store'].includes(SESSION.role);
+  const rows=DB.suppliers.map(s=>`<tr><td><b>${s.name}</b></td><td class="mini">${s.items}</td><td class="num">${s.contact}</td><td class="mini">${s.email}</td>
+    <td><span class="badge b-info">${s.lead} day(s)</span></td><td class="num">${DB.pos.filter(p=>p.supplier===s.id).length} POs</td>
+    ${canEdit?`<td class="r" style="white-space:nowrap"><button class="btn btn-ghost btn-sm" onclick="mEditSupplier('${s.id}')">Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="removeSupplier('${s.id}')">Remove</button></td>`:''}</tr>`).join('');
+  return `<div class="toolbar"><div class="grow"></div>${canEdit?`<button class="btn btn-primary btn-sm" onclick="mEditSupplier('')"><span class="ic">＋</span>New supplier</button>`:''}</div>
+  <div class="card panel" style="padding-top:14px"><table><thead><tr><th>Supplier</th><th>Supplies</th><th>Phone</th><th>Email</th><th>Lead time</th><th class="r">History</th>${canEdit?'<th></th>':''}</tr></thead><tbody>${rows}</tbody></table></div>`;
+};
+function mEditSupplier(id){const s=id?sup(id):{name:'',contact:'',email:'',lead:2,items:''};
+  modal(`<div class="modal-h"><h3>${id?'Edit supplier':'New supplier'}</h3><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="modal-b"><div class="field"><label>Company name *</label><input id="sName" value="${s.name}" placeholder="e.g. Ceylon Spices Ltd"></div>
+    <div class="row"><div class="field"><label>Phone</label><input id="sContact" value="${s.contact}"></div>
+    <div class="field"><label>Lead time (days)</label><input id="sLead" type="number" min="1" value="${s.lead}"></div></div>
+    <div class="field"><label>Email</label><input id="sEmail" value="${s.email}"></div>
+    <div class="field"><label>What they supply</label><input id="sItems" value="${s.items}" placeholder="e.g. Spices, Nuts"></div></div>
+  <div class="modal-f"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-primary" onclick="saveSupplier('${id}')">Save supplier</button></div>`);}
+function saveSupplier(id){const n=v('sName').trim();if(!n){toast('Company name is required.','bad');return;}
+  const data={name:n,contact:v('sContact'),email:v('sEmail'),lead:+v('sLead')||1,items:v('sItems')};
+  if(id){Object.assign(sup(id),data);audit('SUPPLIER_EDIT',n);toast('Supplier updated.','good');}
+  else{DB.suppliers.push({id:'S'+(DB.seq.gid++),...data});audit('SUPPLIER_ADD',n);toast(`${n} added as a supplier.`,'good');}
+  closeModal();refresh();}
+function removeSupplier(id){const linked=DB.ingredients.filter(i=>i.supplier===id);
+  if(linked.length){toast(`Cannot remove — ${linked.length} ingredient(s) linked (${linked.map(i=>i.name).join(', ')}). Re-assign them first.`,'bad');return;}
+  modal(`<div class="modal-h"><h3>Remove ${sup(id).name}?</h3><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="modal-b">PO history is kept, but no new POs can be raised to this supplier.</div>
+  <div class="modal-f"><button class="btn btn-ghost" onclick="closeModal()">Keep</button>
+    <button class="btn btn-danger" onclick="doRemoveSupplier('${id}')">Remove supplier</button></div>`);}
+function doRemoveSupplier(id){audit('SUPPLIER_REMOVE',sup(id).name);DB.suppliers=DB.suppliers.filter(s=>s.id!==id);closeModal();toast('Supplier removed.','warn');refresh();}
+
+/* ---------------- PRODUCTS & RECIPES ---------------- */
+RENDER.products=()=>{
+  const canEdit=['admin','manager'].includes(SESSION.role);
+  const cards=DB.products.map(p=>{const mb=maxBakeable(p);
+    const rec=p.recipe.map(([iId,per])=>`<div class="hrow" style="margin-bottom:6px"><div class="nm">${ing(iId)?ing(iId).name:'?'}</div><div class="grow mini">${per} ${ing(iId)?ing(iId).uom:''} / unit</div>${stockOf(iId)<per?'<span class="badge b-bad">none</span>':''}</div>`).join('');
+    return `<div class="card"><div class="card-h"><span style="font-size:22px">${p.emoji}</span><h3>${p.name}</h3><span class="grow"></span><span class="badge b-mut">${money(p.price).replace('Rs. ','Rs.')}</span></div>
+    <div class="card-b"><div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <span class="badge b-info">Shelf: ${p.stock}</span>
+      <span class="badge ${mb>20?'b-good':mb>0?'b-warn':'b-bad'}">Max bakeable: ${mb}</span>
+      <span class="badge b-mut">Margin ${margin(p).toFixed(0)}%</span></div>
+      <div class="sec-lbl">Recipe · per unit</div>${rec}
+      ${canEdit?`<div style="display:flex;gap:8px;margin-top:14px"><button class="btn btn-ghost btn-sm" onclick="mEditProduct('${p.id}')">✏️ Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="removeProduct('${p.id}')">Remove</button></div>`:''}</div></div>`;}).join('');
+  return `<div class="toolbar"><div class="grow"></div>${canEdit?`<button class="btn btn-primary btn-sm" onclick="mEditProduct('')"><span class="ic">＋</span>New product</button>`:''}</div>
+  <div class="grid g-auto">${cards}</div>`;
+};
+function mEditProduct(id){const p=id?prod(id):{name:'',emoji:'🥨',price:200,stock:0,desc:'',recipe:[[DB.ingredients[0].id,0.1]]};
+  editRecipe=JSON.parse(JSON.stringify(p.recipe));
+  modal(`<div class="modal-h"><h3>${id?'Edit product':'New product'}</h3><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="modal-b">
+    <div class="row"><div class="field"><label>Product name *</label><input id="pName" value="${p.name}" placeholder="e.g. Cinnamon roll"></div>
+    <div class="field" style="max-width:110px"><label>Emoji</label><input id="pEmoji" value="${p.emoji}"></div></div>
+    <div class="row"><div class="field"><label>Price (Rs) *</label><input id="pPrice" type="number" min="0" value="${p.price}"></div>
+    <div class="field"><label>Shelf stock</label><input id="pStock" type="number" min="0" value="${p.stock||0}"></div></div>
+    <div class="field"><label>Description</label><input id="pDesc" value="${p.desc||''}" placeholder="Shown to customers in the shop"></div>
+    <div class="field"><label>Recipe — ingredients per 1 unit</label><div id="recipeLines"></div>
+      <button class="btn btn-ghost btn-sm" onclick="editRecipe.push([DB.ingredients[0].id,0.1]);drawRecipe()"><span class="ic">＋</span>Add ingredient line</button></div>
+  </div>
+  <div class="modal-f"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-primary" onclick="saveProduct('${id}')">Save product</button></div>`,true);
+  drawRecipe();}
+function drawRecipe(){const opts=iId=>DB.ingredients.map(x=>`<option value="${x.id}" ${x.id===iId?'selected':''}>${x.name} (${x.uom})</option>`).join('');
+  document.getElementById('recipeLines').innerHTML=editRecipe.map((r,idx)=>`<div class="recipe-line">
+    <select onchange="editRecipe[${idx}][0]=this.value">${opts(r[0])}</select>
+    <input type="number" step="0.001" min="0" value="${r[1]}" onchange="editRecipe[${idx}][1]=+this.value||0">
+    <button class="btn btn-danger btn-sm" onclick="editRecipe.splice(${idx},1);drawRecipe()">✕</button></div>`).join('');}
+function saveProduct(id){const n=v('pName').trim();if(!n){toast('Product name is required.','bad');return;}
+  const rec=editRecipe.filter(r=>r[1]>0);if(!rec.length){toast('Add at least one recipe ingredient.','bad');return;}
+  const data={name:n,emoji:v('pEmoji')||'🥨',price:+v('pPrice')||0,stock:+v('pStock')||0,desc:v('pDesc'),recipe:rec};
+  if(id){Object.assign(prod(id),data);audit('PRODUCT_EDIT',n);toast(`${n} updated.`,'good');}
+  else{DB.products.push({id:'P'+(DB.seq.gid++),...data,avg:10});notify('info','❏','New product added',`${n} · ${fmt(data.price)}`,'catalogue');audit('PRODUCT_ADD',n);toast(`${n} added to the catalogue.`,'good');}
+  closeModal();refresh();}
+function removeProduct(id){const p=prod(id);
+  modal(`<div class="modal-h"><h3>Remove ${p.name}?</h3><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="modal-b">It will disappear from the customer shop. Past orders keep their history.</div>
+  <div class="modal-f"><button class="btn btn-ghost" onclick="closeModal()">Keep</button>
+    <button class="btn btn-danger" onclick="doRemoveProduct('${id}')">Remove product</button></div>`);}
+function doRemoveProduct(id){audit('PRODUCT_REMOVE',prod(id).name);DB.products=DB.products.filter(p=>p.id!==id);closeModal();toast('Product removed.','warn');refresh();}
+
+/* ---------------- CUSTOMER ORDERS (staff) ---------------- */
+const ORD_STEPS=['Pending','Preparing','Ready','Out for delivery','Delivered'];
+const ordById=id=>DB.orders.find(o=>o.id===id);
+function orderTotal(o){return o.items.reduce((s,[pId,q])=>s+(prod(pId)?prod(pId).price:0)*q,0)||o.total;}
+RENDER.orders=()=>{
+  const rows=DB.orders.filter(o=>ordFilter==='all'||o.status===ordFilter).map(o=>{
+    const items=o.items.map(([pId,q])=>`${prod(pId)?prod(pId).emoji:'🛍'} ${prod(pId)?prod(pId).name:'item'} ×${q}`).join('<br>');
+    const cls=o.status==='Delivered'?'b-good':o.status==='Pending'?'b-warn':o.status==='Cancelled'?'b-bad':'b-info';
+    return `<tr class="clickable" onclick="orderDetail('${o.id}',true)"><td class="num"><b>${o.id}</b><br><span class="subtx">${o.date} · ${o.type} · ${o.mode}</span></td>
+      <td><b>${o.customer}</b><br><span class="subtx">${o.phone}</span></td><td class="mini">${items}</td><td class="num">${money(o.total).replace('Rs. ','')}</td>
+      <td><span class="badge ${cls}">${o.status}</span></td>
+      <td class="r" onclick="event.stopPropagation()" style="white-space:nowrap">${staffOrderActions(o)}</td></tr>`;}).join('');
+  return `<div class="toolbar"><div class="seg">${['all',...ORD_STEPS,'Cancelled'].map(f=>`<button class="${ordFilter===f?'active':''}" onclick="ordFilter='${f}';refresh()">${f==='all'?'All':f}</button>`).join('')}</div></div>
+  <div class="card panel" style="padding-top:14px"><table><thead><tr><th>Order</th><th>Customer</th><th>Items</th><th class="r">Total</th><th>Status</th><th class="r">Action</th></tr></thead>
+    <tbody>${rows||`<tr><td colspan="6"><div class="empty"><div class="ic">☰</div>No orders in this view.</div></td></tr>`}</tbody></table></div>`;
+};
+function staffOrderActions(o){
+  if(o.status==='Pending')return `<button class="btn btn-primary btn-sm" onclick="ordNext('${o.id}','Preparing')">Confirm</button> <button class="btn btn-ghost btn-sm" onclick="staffCancel('${o.id}')">Cancel</button>`;
+  if(o.status==='Preparing')return `<button class="btn btn-good btn-sm" onclick="ordNext('${o.id}','Ready')">Mark ready</button>`;
+  if(o.status==='Ready')return o.mode==='Delivery'?`<button class="btn btn-info btn-sm" onclick="mDispatch('${o.id}')">🛵 Dispatch</button>`:`<button class="btn btn-good btn-sm" onclick="ordNext('${o.id}','Delivered')">Handover</button>`;
+  if(o.status==='Out for delivery')return `<button class="btn btn-good btn-sm" onclick="markDelivered('${o.id}')">✓ Delivered</button>`;
+  return '<span class="subtx">—</span>';}
+function ordNext(id,st){const o=ordById(id);o.status=st;
+  if(st==='Preparing'){o.items.forEach(([pId,q])=>{if(prod(pId))prod(pId).stock=Math.max(0,prod(pId).stock-q);});o.timeline.push({t:'Today '+nowT(),e:'Confirmed — preparing'});notify('info','☰',`${id} confirmed`,'Shelf stock reserved · preparing','orders');}
+  if(st==='Ready')o.timeline.push({t:'Today '+nowT(),e:'Ready for '+(o.mode==='Delivery'?'dispatch':'pickup')});
+  if(st==='Delivered')o.timeline.push({t:'Today '+nowT(),e:'Handed over at counter'});
+  audit('ORDER_'+st.toUpperCase().replace(/ /g,'_'),id);toast(`${id} → ${st}`,'good');refresh();closeModal();}
+function staffCancel(id){const o=ordById(id);o.status='Cancelled';o.timeline.push({t:'Today '+nowT(),e:'Cancelled by bakery'});
+  notify('warn','☰',`${id} cancelled`,'By bakery staff','orders');audit('ORDER_CANCELLED',id);toast(`${id} cancelled.`,'warn');refresh();closeModal();}
+function mDispatch(id){const o=ordById(id);
+  modal(`<div class="modal-h"><h3>🛵 Dispatch ${id}</h3><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="modal-b">
+    <div class="kv"><span>Deliver to</span><b>${o.customer}</b></div>
+    <div class="kv"><span>Address</span><b style="max-width:300px">${o.address}</b></div>
+    <div class="row" style="margin-top:12px"><div class="field"><label>Delivery person *</label><input id="dName" placeholder="e.g. Ruwan J."></div>
+    <div class="field"><label>Rider phone *</label><input id="dPhone" placeholder="07X-XXXXXXX"></div></div>
+    <div class="row"><div class="field"><label>Vehicle type</label><select id="dVType"><option>Motorbike</option><option>Three-wheeler</option><option>Van</option><option>Bicycle</option></select></div>
+    <div class="field"><label>Vehicle number *</label><input id="dVNo" placeholder="e.g. WP BAQ-4521"></div></div>
+    <div class="field"><label>Expected delivery time</label><input id="dEta" value="Within 45 min"></div>
+    <div class="alert a-info" style="margin:4px 0 0"><span>👁</span><div>These details become visible to the customer in <b style="display:inline">My orders</b> the moment you dispatch.</div></div>
+  </div>
+  <div class="modal-f"><button class="btn btn-ghost" onclick="closeModal()">Back</button>
+    <button class="btn btn-info" onclick="dispatchOrder('${id}')">Dispatch rider →</button></div>`);}
+function dispatchOrder(id){const o=ordById(id);const n=v('dName').trim(),ph=v('dPhone').trim(),vn=v('dVNo').trim();
+  if(!n||!ph||!vn){toast('Rider name, phone and vehicle number are required.','bad');return;}
+  o.delivery={driver:n,phone:ph,vtype:v('dVType'),vehicle:vn,eta:v('dEta'),dispatchedAt:'Today '+nowT(),deliveredAt:null};
+  o.status='Out for delivery';o.timeline.push({t:'Today '+nowT(),e:`Dispatched · ${n} · ${v('dVType')} ${vn}`});
+  notify('info','🛵',`${id} out for delivery`,`${n} · ${vn} · ETA ${o.delivery.eta}`,'orders');audit('ORDER_DISPATCHED',`${id} · ${n}`);
+  closeModal();toast(`${id} dispatched with ${n}. Customer can now see rider details.`,'good');refresh();}
+function markDelivered(id){const o=ordById(id);o.status='Delivered';if(o.delivery)o.delivery.deliveredAt='Today '+nowT();
+  o.timeline.push({t:'Today '+nowT(),e:'Delivered & received by customer'});
+  notify('good','✓',`${id} delivered`,'Received at '+nowT(),'orders');audit('ORDER_DELIVERED',id);toast(`${id} marked delivered.`,'good');refresh();closeModal();}
+
+function orderDetail(id,staff){const o=ordById(id);const idx=ORD_STEPS.indexOf(o.status);
+  const steps=ORD_STEPS.filter(s=>!(o.mode==='Pickup'&&s==='Out for delivery'));
+  const track=o.status==='Cancelled'?'<span class="badge b-bad">Cancelled</span>':
+    `<div class="ostep">${steps.map((s,i,arr)=>{const on=ORD_STEPS.indexOf(s)<=idx;return `<div class="s ${on?'on':''}"><div class="d">${on?'✓':i+1}</div>${s}</div>${i<arr.length-1?'<div class="ln"></div>':''}`;}).join('')}</div>`;
+  const items=o.items.map(([pId,q])=>`<div class="kv"><span>${prod(pId)?prod(pId).emoji:'🛍'} ${prod(pId)?prod(pId).name:'item'} ×${q}</span><b>${money((prod(pId)?prod(pId).price:0)*q).replace('Rs. ','')}</b></div>`).join('');
+  const dlv=o.delivery?`<div class="sec-lbl">🛵 Delivery tracking</div>
+    <div class="kv"><span>Delivery person</span><b>${o.delivery.driver}</b></div>
+    <div class="kv"><span>Rider phone</span><b>${o.delivery.phone}</b></div>
+    <div class="kv"><span>Vehicle</span><b>${o.delivery.vtype} · ${o.delivery.vehicle}</b></div>
+    <div class="kv"><span>Dispatched</span><b>${o.delivery.dispatchedAt}</b></div>
+    <div class="kv"><span>Expected</span><b>${o.delivery.eta}</b></div>
+    ${o.delivery.deliveredAt?`<div class="kv"><span>Received at</span><b style="color:var(--fresh)">${o.delivery.deliveredAt}</b></div>`:''}`:'';
+  const tl=`<div class="sec-lbl">Timeline</div><ul class="timeline">${o.timeline.map(t=>`<li><b>${t.t}</b> — ${t.e}</li>`).join('')}</ul>`;
+  const custActions=!staff&&o.status==='Pending'?`<button class="btn btn-danger" onclick="custCancel('${o.id}')">Cancel order</button>`:'';
+  const reorder=!staff?`<button class="btn btn-ghost" onclick="reorderItems('${o.id}')">↻ Reorder these items</button>`:'';
+  modal(`<div class="modal-h"><h3>${o.id}</h3><span class="grow"></span><span class="badge ${o.status==='Delivered'?'b-good':o.status==='Cancelled'?'b-bad':'b-info'}">${o.status}</span><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="modal-b">${track}<div style="height:14px"></div>
+    <div class="kv"><span>Customer</span><b>${o.customer} · ${o.phone}</b></div>
+    <div class="kv"><span>Placed</span><b>${o.date} (${o.type})</b></div>
+    <div class="kv"><span>Mode</span><b>${o.mode}</b></div>
+    <div class="kv"><span>${o.mode==='Delivery'?'Delivery address':'Pickup'}</span><b style="max-width:300px">${o.address}</b></div>
+    <div class="kv"><span>Payment</span><b>${o.payment}</b></div>
+    ${o.note?`<div class="kv"><span>Note</span><b style="max-width:300px">${o.note}</b></div>`:''}
+    <div class="sec-lbl">Items</div>${items}<div class="kv"><span><b style="color:var(--ink)">Total</b></span><b style="color:var(--brass)">${money(o.total).replace('Rs. ','')}</b></div>
+    ${dlv}${tl}
+  </div>
+  <div class="modal-f">${reorder}${custActions}<button class="btn btn-ghost" onclick="closeModal()">Close</button>
+    ${staff?`<span class="grow"></span>${staffOrderActions(o)}`:''}</div>`,true);}
+
+/* ---------------- CUSTOMER SHOP ---------------- */
+RENDER.shop=()=>{
+  const cards=DB.products.map(p=>{const out=p.stock<=0;
+    return `<div class="card prodcard"><div class="thumb">${p.emoji}</div>
+      <div class="nm">${p.name}</div><div class="desc">${p.desc||''}</div>
+      <div>${out?'<span class="badge b-bad">Sold out today</span>':p.stock<10?`<span class="badge b-warn">Only ${p.stock} left</span>`:'<span class="badge b-good">Freshly stocked</span>'}</div>
+      <div class="prow"><span class="pr">${money(p.price).replace('Rs. ','Rs.')}</span>
+        ${out?'<button class="btn btn-ghost btn-sm" disabled>Unavailable</button>':
+        `<div class="qty-ctl"><button onclick="cartAdd('${p.id}',-1)">−</button><span id="c-${p.id}">${cart[p.id]||0}</span><button onclick="cartAdd('${p.id}',1)">＋</button></div>`}
+      </div></div>`;}).join('');
+  return `<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr))">${cards}</div>`;
+};
+function cartAdd(pid,delta){const max=prod(pid).stock;cart[pid]=Math.min(max,Math.max(0,(cart[pid]||0)+delta));if(!cart[pid])delete cart[pid];
+  const e=document.getElementById('c-'+pid);if(e)e.textContent=cart[pid]||0;updateCartFab();}
+function cartItems(){return Object.entries(cart).map(([pid,q])=>[pid,q]);}
+function cartTotal(){return cartItems().reduce((s,[pid,q])=>s+prod(pid).price*q,0);}
+function updateCartFab(){const n=cartItems().reduce((s,[,q])=>s+q,0);
+  document.getElementById('cartFab').classList.toggle('show',n>0&&SESSION&&SESSION.role==='customer'&&CURRENT==='shop');
+  document.getElementById('cartCount').textContent=n;}
+function openCheckout(){if(!cartItems().length){toast('Your basket is empty.','warn');return;}
+  const rows=cartItems().map(([pid,q])=>`<div class="kv"><span>${prod(pid).emoji} ${prod(pid).name} ×${q}</span><b>${money(prod(pid).price*q).replace('Rs. ','')}</b></div>`).join('');
+  const delFee=cartTotal()>=2000?0:250;
+  modal(`<div class="modal-h"><h3>🧺 Checkout</h3><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="modal-b">${rows}
+    <div class="kv"><span>Delivery fee ${delFee===0?'(free over '+fmt(2000)+')':''}</span><b>${delFee?money(delFee).replace('Rs. ',''):'FREE'}</b></div>
+    <div class="kv"><span><b style="color:var(--ink)">Total</b></span><b style="color:var(--brass)">${money(cartTotal()+delFee).replace('Rs. ','')}</b></div>
+    <div class="row" style="margin-top:14px"><div class="field"><label>Order mode</label><select id="coMode" onchange="document.getElementById('coAddrWrap').style.display=this.value==='Delivery'?'block':'none'"><option>Delivery</option><option>Pickup at store</option></select></div>
+    <div class="field"><label>Payment method</label><select id="coPay">
+      <option ${SESSION.payment==='Cash on delivery'?'selected':''}>Cash on delivery</option>
+      <option ${SESSION.payment==='Card on delivery'?'selected':''}>Card on delivery</option>
+      <option ${SESSION.payment==='Online card payment'?'selected':''}>Online card payment</option></select></div></div>
+    <div id="coAddrWrap"><div class="field"><label>Deliver to (your saved address — editable)</label><textarea id="coAddr" rows="2">${SESSION.address||''}</textarea></div></div>
+    <div class="field"><label>Note for the bakery (optional)</label><input id="coNote" placeholder="e.g. add birthday candles"></div>
+    <label style="display:flex;gap:8px;font-size:12.5px;color:var(--slate);align-items:center;font-weight:600"><input type="checkbox" id="coSaveAddr" checked style="width:auto"> Save this address to my account</label>
+  </div>
+  <div class="modal-f"><button class="btn btn-ghost" onclick="closeModal()">Keep shopping</button>
+    <button class="btn btn-primary" onclick="placeOrder(${delFee})">Place order · ${money(cartTotal()+delFee).replace('Rs. ','Rs.')}</button></div>`,true);}
+function placeOrder(fee){const mode=v('coMode')==='Delivery'?'Delivery':'Pickup';
+  const addr=mode==='Delivery'?v('coAddr').trim():'Pickup at store';
+  if(mode==='Delivery'&&!addr){toast('Please enter a delivery address.','bad');return;}
+  if(mode==='Delivery'&&document.getElementById('coSaveAddr').checked)SESSION.address=addr;
+  SESSION.payment=v('coPay');
+  const o={id:'ORD-'+(DB.seq.ord++),customer:SESSION.name,phone:SESSION.phone||'—',items:cartItems(),total:cartTotal()+(mode==='Delivery'?fee:0),
+    status:'Pending',date:'Today '+nowT(),type:'Online',mode,address:addr,payment:v('coPay'),note:v('coNote'),delivery:null,
+    timeline:[{t:'Today '+nowT(),e:'Order placed online'}]};
+  DB.orders.unshift(o);cart={};closeModal();updateCartFab();
+  notify('info','☰',`New online order ${o.id}`,`${o.customer} · ${fmt(o.total)} · ${mode}`,'orders');audit('ORDER_PLACED',o.id);
+  toast(`Order ${o.id} placed! Track it in My orders. 🥐`,'good');go('myorders');}
+function custCancel(id){const o=ordById(id);
+  if(o.status!=='Pending'){toast('Orders can only be cancelled before the bakery confirms them.','warn');return;}
+  o.status='Cancelled';o.timeline.push({t:'Today '+nowT(),e:'Cancelled by customer'});
+  notify('warn','☰',`${id} cancelled by customer`,o.customer,'orders');audit('ORDER_CANCELLED',id+' (customer)');
+  closeModal();toast('Order cancelled — nothing was charged.','warn');refresh();}
+function reorderItems(id){const o=ordById(id);cart={};
+  o.items.forEach(([pId,q])=>{if(prod(pId)&&prod(pId).stock>0)cart[pId]=Math.min(prod(pId).stock,q);});
+  closeModal();go('shop');toast('Items added back to your basket — checkout when ready.','good');}
+RENDER.myorders=()=>{const mine=DB.orders.filter(o=>o.customer===SESSION.name);
+  if(!mine.length)return `<div class="card panel"><div class="empty"><div class="ic">🛒</div>No orders yet.<br><br><button class="btn btn-primary" onclick="go('shop')">Browse bakery items</button></div></div>`;
+  const cards=mine.map(o=>{const cls=o.status==='Delivered'?'b-good':o.status==='Cancelled'?'b-bad':o.status==='Pending'?'b-warn':'b-info';
+    const items=o.items.map(([pId,q])=>`${prod(pId)?prod(pId).emoji:'🛍'} ${prod(pId)?prod(pId).name:'item'} ×${q}`).join(' · ');
+    const rider=o.delivery&&!o.delivery.deliveredAt?`<div class="alert a-info" style="margin:10px 0 0"><span>🛵</span><div><b>${o.delivery.driver} is on the way</b>${o.delivery.vtype} ${o.delivery.vehicle} · ☎ ${o.delivery.phone} · ETA ${o.delivery.eta}</div></div>`:'';
+    return `<div class="card"><div class="card-h"><h3>${o.id}</h3><span class="grow"></span><span class="badge ${cls}">${o.status}</span></div>
+    <div class="card-b"><div style="margin-bottom:8px;font-size:13px">${items}</div>
+      <div class="kv"><span>${o.date} · ${o.mode}</span><b style="color:var(--brass)">${money(o.total).replace('Rs. ','')}</b></div>${rider}
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="orderDetail('${o.id}',false)">View details</button>
+        ${o.status==='Pending'?`<button class="btn btn-danger btn-sm" onclick="custCancel('${o.id}')">Cancel</button>`:''}
+        <button class="btn btn-ghost btn-sm" onclick="reorderItems('${o.id}')">↻ Reorder</button></div></div></div>`;}).join('');
+  return `<div class="grid g-auto">${cards}</div>`;
+};
+
+/* ---------------- CUSTOMER ACCOUNT ---------------- */
+RENDER.account=()=>{
+  const mine=DB.orders.filter(o=>o.customer===SESSION.name&&o.status!=='Cancelled');
+  const spent=mine.reduce((s,o)=>s+o.total,0);
+  return `<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr));max-width:780px">
+    <div class="card"><div class="card-h"><h3>👤 Profile & delivery</h3></div><div class="card-b">
+      <div class="field"><label>Full name</label><input id="acName" value="${SESSION.name}"></div>
+      <div class="field"><label>Phone</label><input id="acPhone" value="${SESSION.phone||''}"></div>
+      <div class="field"><label>Email</label><input id="acEmail" value="${SESSION.email}" disabled></div>
+      <div class="field"><label>Default delivery address (auto-filled at checkout)</label><textarea id="acAddr" rows="3">${SESSION.address||''}</textarea></div>
+      <div class="field"><label>Preferred payment</label><select id="acPay">${['Cash on delivery','Card on delivery','Online card payment'].map(p=>`<option ${SESSION.payment===p?'selected':''}>${p}</option>`).join('')}</select></div>
+      <button class="btn btn-primary" onclick="saveAccount()">Save changes</button>
+    </div></div>
+    <div class="card"><div class="card-h"><h3>📈 My summary</h3></div><div class="card-b">
+      <div class="kv"><span>Total orders</span><b>${mine.length}</b></div>
+      <div class="kv"><span>Total spent</span><b>${money(spent).replace('Rs. ','Rs.')}</b></div>
+      <div class="kv"><span>Loyalty points (1 pt / Rs 100)</span><b style="color:var(--brass)">⭐ ${Math.floor(spent/100)}</b></div>
+      <div class="kv"><span>Member since</span><b>2026</b></div>
+      <div class="alert a-good" style="margin-top:14px"><span>🎁</span><div><b>Loyalty perk</b>Free delivery on orders over ${fmt(2000)} — points redemption coming soon.</div></div>
+    </div></div></div>`;
+};
+function saveAccount(){SESSION.name=v('acName').trim()||SESSION.name;SESSION.phone=v('acPhone');
+  SESSION.address=v('acAddr').trim();SESSION.payment=v('acPay');
+  document.getElementById('whoName').textContent=SESSION.name;document.getElementById('avatar').textContent=SESSION.name[0];
+  toast('Account updated — your new address will be used at checkout.','good');}
+
+/* ---------------- USERS & ROLES ---------------- */
+const PERMS={admin:'Full access — all modules, users & roles',manager:'Dashboard, inventory, production, POs, orders, suppliers, reports',baker:'Production, recipes, inventory (view), order queue',store:'Inventory, POs, suppliers, wastage',customer:'Shop, own orders & account only'};
+RENDER.users=()=>{
+  const rows=DB.users.map(u=>`<tr><td><div style="display:flex;gap:10px;align-items:center"><div class="av" style="width:30px;height:30px;font-size:12px;background:var(--brass);color:#fff;border-radius:50%;display:grid;place-items:center;font-weight:600">${u.name[0]}</div><div><b>${u.name}</b><br><span class="subtx">${u.email}</span></div></div></td>
+    <td><span class="badge ${u.role==='admin'?'b-bad':u.role==='customer'?'b-mut':'b-info'}">${ROLE_META[u.role].label}</span></td>
+    <td class="mini">${PERMS[u.role]}</td>
+    <td><span class="badge ${u.active?'b-good':'b-mut'}">${u.active?'Active':'Disabled'}</span></td>
+    <td class="r" style="white-space:nowrap"><button class="btn btn-ghost btn-sm" onclick="uToggle(${u.id})">${u.active?'Disable':'Enable'}</button>
+      <button class="btn btn-ghost btn-sm" onclick="uRole(${u.id})">Role</button></td></tr>`).join('');
+  return `<div class="toolbar"><div class="grow"></div><button class="btn btn-primary btn-sm" onclick="mNewUser()"><span class="ic">＋</span>New user</button></div>
+  <div class="card panel" style="padding-top:14px"><table><thead><tr><th>User</th><th>Role</th><th>Access scope</th><th>Status</th><th class="r"></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+};
+function uToggle(id){const u=DB.users.find(x=>x.id===id);u.active=!u.active;audit('USER_'+(u.active?'ENABLED':'DISABLED'),u.name);toast(u.name+(u.active?' enabled.':' disabled.'),'good');refresh();}
+function uRole(id){const u=DB.users.find(x=>x.id===id);const opts=Object.keys(ROLE_META).map(r=>`<option value="${r}" ${u.role===r?'selected':''}>${ROLE_META[r].label}</option>`).join('');
+  modal(`<div class="modal-h"><h3>Change role — ${u.name}</h3><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="modal-b"><div class="field"><label>Role</label><select id="mRole">${opts}</select></div></div>
+  <div class="modal-f"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-primary" onclick="saveRole(${id})">Save</button></div>`);}
+function saveRole(id){const u=DB.users.find(x=>x.id===id);u.role=v('mRole');audit('USER_ROLE',`${u.name} → ${u.role}`);closeModal();toast('Role updated.','good');refresh();}
+function mNewUser(){const opts=Object.keys(ROLE_META).map(r=>`<option value="${r}">${ROLE_META[r].label}</option>`).join('');
+  modal(`<div class="modal-h"><h3>New user</h3><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="modal-b"><div class="field"><label>Full name *</label><input id="nuName"></div>
+    <div class="field"><label>Email</label><input id="nuEmail" type="email"></div>
+    <div class="field"><label>Role</label><select id="nuRole">${opts}</select></div></div>
+  <div class="modal-f"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-primary" onclick="saveNewUser()">Create user</button></div>`);}
+function saveNewUser(){const n=v('nuName').trim();if(!n){toast('Name is required.','bad');return;}
+  DB.users.push({id:Date.now(),name:n,email:v('nuEmail'),role:v('nuRole'),active:true});audit('USER_ADD',n);closeModal();toast(`${n} added.`,'good');refresh();}
+
+/* ---------------- WASTAGE ---------------- */
+RENDER.wastage=()=>{
+  const total7=DB.wastage.filter(w=>w.date>=d(-7)).reduce((s,w)=>s+w.cost,0);
+  const total30=DB.wastage.filter(w=>w.date>=d(-30)).reduce((s,w)=>s+w.cost,0);
+  const canEdit=['admin','manager','store'].includes(SESSION.role);
+  const rows=DB.wastage.map(w=>`<tr><td class="mini">${w.date}</td><td><b>${ing(w.ing)?ing(w.ing).name:w.ing}</b></td><td class="num">${w.batch||'—'}</td>
+    <td class="num">${w.qty} ${ing(w.ing)?ing(w.ing).uom:''}</td><td><span class="pill ${w.reason==='Expired'||w.reason==='Damaged/Spoiled'?'p-danger':'p-warn'}"><span class="d"></span>${w.reason}</span></td>
+    <td class="num" style="color:var(--danger)">−${money(w.cost).replace('Rs. ','')}</td>
+    <td><span class="pill ${w.auto?'p-slate':'p-brass'}"><span class="d"></span>${w.auto?'auto':'manual'}</span></td></tr>`).join('');
+  return `<div class="grid g3" style="margin-bottom:18px">
+    ${kpiCard('♺','var(--danger-tint)','var(--danger)','Waste · 7 days',money(total7).replace('Rs. ','Rs.'),`${DB.wastage.filter(w=>w.date>=d(-7)).length} events`)}
+    ${kpiCard('♺','var(--warn-tint)','var(--warn)','Waste · 30 days',money(total30).replace('Rs. ','Rs.'),'auto + manual')}
+    ${kpiCard('⏳','var(--fresh-tint)','var(--fresh)','Auto-logged',DB.wastage.filter(w=>w.auto).length,'by expiry job')}
+  </div>
+  <div class="card panel">
+    <div class="panel-h"><h3>Wastage log</h3><span class="tag">costed at batch price</span><span class="sp"></span>
+      ${canEdit?`<button class="btn btn-slate btn-sm" onclick="runExpiryJob()"><span class="ic">♺</span>Run expiry job</button>`:''}</div>
+    <table><thead><tr><th>Date</th><th>Ingredient</th><th>Batch</th><th class="r">Qty</th><th>Reason</th><th class="r">Cost</th><th>Source</th></tr></thead>
+    <tbody>${rows||`<tr><td colspan="7"><div class="empty">No wastage recorded.</div></td></tr>`}</tbody></table>
+  </div>`;
+};
+
+/* ---------------- NOTIFICATIONS ---------------- */
+RENDER.notifications=()=>{
+  const icons={inventory:'♺',orders:'☰',purchasing:'⛿',production:'⚖',catalogue:'❏'};
+  return `<div class="card panel">
+    <div class="panel-h"><h3>Notifications</h3><span class="tag">${unreadN()} unread</span><span class="sp"></span>
+      <button class="btn btn-ghost btn-sm" onclick="toggleNotif(true)">Open drawer</button>
+      <button class="btn btn-ghost btn-sm" onclick="markAllRead()">Mark all read</button></div>
+    ${DB.notifs.length?DB.notifs.map(n=>`<div style="display:flex;align-items:center;gap:14px;padding:14px 4px;border-bottom:1px solid var(--line-2)">
+      <div style="width:36px;height:36px;border-radius:9px;background:${n.read?'var(--line-2)':'var(--brass-tint)'};color:${n.read?'var(--muted)':'var(--brass)'};display:grid;place-items:center;font-size:16px">${n.icon||icons[n.cat]||'●'}</div>
+      <div style="flex:1"><div style="font-size:14px;${n.read?'color:var(--muted)':'font-weight:500'}">${n.title}</div><div class="mini">${n.msg} · ${n.time} · ${n.cat}</div></div>
+      ${!n.read?`<button class="btn btn-ghost btn-sm" onclick="markRead(${n.id})">Clear</button>`:'<span class="pill p-fresh"><span class="d"></span>read</span>'}</div>`).join(''):`<div class="empty"><div class="ic">✓</div>No notifications.</div>`}
+  </div>`;
+};
+
+/* ---------------- AUDIT LOG ---------------- */
+RENDER.audit=()=>{
+  return `<div class="card panel"><div class="panel-h"><h3>Audit log</h3><span class="tag">admin only · read-only</span></div>
+    <table><thead><tr><th>When</th><th>User</th><th>Action</th><th>Detail</th></tr></thead>
+    <tbody>${DB.audit.length?DB.audit.map(l=>`<tr><td class="mini">${l.when}</td><td><b>${l.who}</b></td><td><span class="pill p-slate"><span class="d"></span>${l.act}</span></td><td class="mini">${l.det}</td></tr>`).join(''):`<tr><td colspan="4"><div class="empty">No activity recorded yet — perform actions to populate the log.</div></td></tr>`}</tbody></table></div>`;
+};
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+fillLoginRoles();
+checkLowStock();
+</script>
+</body>
+</html>
