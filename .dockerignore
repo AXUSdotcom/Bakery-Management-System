@@ -1,0 +1,9 @@
+.git
+.claude
+*.zip
+BAKERY_APP_BUILD_PLAN.md
+sweet-bakers-console.html
+README.md
+docker-compose.yml
+.env
+.env.example
