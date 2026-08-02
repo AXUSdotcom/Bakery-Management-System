@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sweet Bakers — Operations Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="panel" id="loginBox">
+    <div class="brand"><div class="mark">S</div><h1>Sweet Bakers</h1></div>
+    <div class="sub">Bakery operations console — sign in</div>
+    <label>Email</label>
+    <input id="loginEmail" type="email" placeholder="you@sweetbakers.lk" autocomplete="username">
+    <label>Password</label>
+    <input id="loginPass" type="password" placeholder="Password" autocomplete="current-password">
+    <button class="go" onclick="doLogin()">Sign in</button>
+    <div class="switch">New customer? <button onclick="showRegister()">Create an account</button></div>
+    <div class="hint">Demo logins are documented in the project README.<br>Data persists in MySQL — nothing resets on reload.</div>
+  </div>
+
+  <div class="panel" id="registerBox" style="display:none">
+    <div class="brand"><div class="mark">S</div><h1>Create account</h1></div>
+    <div class="sub">Customer sign-up — your address is saved for checkout</div>
+    <div class="login-row">
+      <div><label>Full name</label><input id="rName" placeholder="e.g. Tharindu P."></div>
+      <div><label>Phone</label><input id="rPhone" placeholder="07X-XXXXXXX"></div>
+    </div>
+    <label>Email</label><input id="rEmail" type="email" placeholder="you@example.com">
+    <label>Delivery address</label><textarea id="rAddr" rows="2" placeholder="No, Street, City"></textarea>
+    <label>Password</label><input id="rPass" type="password" placeholder="Create a password">
+    <button class="go" onclick="doRegister()">Create account &amp; sign in</button>
+    <div class="switch">Already registered? <button onclick="showLogin()">Back to sign in</button></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <aside class="side">
+    <div class="brand"><div class="mark">S</div><div><b>Sweet Bakers</b><span>Ops Console</span></div></div>
+    <nav id="nav"></nav>
+    <div class="who">
+      <div class="av" id="avatar">P</div>
+      <div><b id="whoName">—</b><span id="whoRole">—</span></div>
+      <button class="out" onclick="logout()" title="Sign out">⏻</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div><div class="crumb" id="crumb">Console</div><h2 id="title">Dashboard</h2></div>
+      <div class="sp"></div>
+      <div class="datechip mono" id="dateChip">—</div>
+      <button class="bell" onclick="toggleNotif()">🔔<span class="dot" id="belldot" style="display:none">0</span></button>
+    </div>
+    <div class="wrap" id="view"></div>
+  </div>
+</div>
+
+<!-- notification drawer -->
+<div class="notif-drawer" id="notifDrawer">
+  <div class="notif-h"><h3>🔔 Notifications</h3><span class="grow"></span>
+    <button class="btn btn-ghost btn-sm" onclick="markAllRead()">Mark all read</button>
+    <button class="btn btn-ghost btn-sm" onclick="toggleNotif(false)">✕</button></div>
+  <div class="notif-list" id="notifList"></div>
+</div>
+
+<button class="cart-fab" id="cartFab" onclick="openCheckout()">🧺 Checkout <span class="cbadge" id="cartCount">0</span></button>
+<div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
+<div class="toast-wrap" id="toasts"></div>
+
+<script src="assets/js/api.js"></script>
+<script src="assets/js/toast.js"></script>
+<script src="assets/js/modal.js"></script>
+<script src="assets/js/notifications.js"></script>
+<script src="assets/js/dashboard.js"></script>
+<script src="assets/js/inventory.js"></script>
+<script src="assets/js/production.js"></script>
+<script src="assets/js/purchasing.js"></script>
+<script src="assets/js/suppliers.js"></script>
+<script src="assets/js/products.js"></script>
+<script src="assets/js/orders.js"></script>
+<script src="assets/js/wastage.js"></script>
+<script src="assets/js/users.js"></script>
+<script src="assets/js/audit.js"></script>
+<script src="assets/js/shop.js"></script>
+<script src="assets/js/account.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

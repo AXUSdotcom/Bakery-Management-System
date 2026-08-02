@@ -1,0 +1,8 @@
+DirectoryIndex index.html
+
+RewriteEngine On
+
+# Route every /api/* request through the front controller, keeping the
+# remainder of the path in ?route= (e.g. /api/purchase/PO119/send -> route=purchase/PO119/send)
+RewriteCond %{REQUEST_URI} ^/api/
+RewriteRule ^api/(.*)$ api/index.php?route=$1 [QSA,L]

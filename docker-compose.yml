@@ -1,0 +1,29 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8080:80"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: sweet_bakers
+      DB_USER: sweetbakers
+      DB_PASS: sweetbakers
+      APP_ENV: local
+    depends_on:
+      - mysql
+  mysql:
+    image: mysql:8
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: sweet_bakers
+      MYSQL_USER: sweetbakers
+      MYSQL_PASSWORD: sweetbakers
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+
+volumes:
+  dbdata:
