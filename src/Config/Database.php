@@ -10,7 +10,7 @@ class Database
     public static function pdo(): PDO
     {
         if (self::$pdo === null) {
-            $host = getenv('DB_HOST') ?: '127.0.0.1';
+            $host = getenv('DB_HOST') ?: 'mysql.railway.internal';
             $port = getenv('DB_PORT') ?: '3306';
             $name = getenv('DB_NAME') ?: 'sweet_bakers';
             $user = getenv('DB_USER') ?: 'root';
